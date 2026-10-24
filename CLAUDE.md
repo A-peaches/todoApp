@@ -1,6 +1,8 @@
 # Apeach 공주 투두
 
-- 앱 본체: `princess-todo.html`
+- 앱 본체: `princess-todo.html`(마크업) + `css/app.css` + `js/app.js`(화면 동작)
+- 오프라인: `sw.js`가 앱 파일(인터넷 먼저)과 CDN 라이브러리·글꼴(저장본 먼저)을 캐시. 라이브러리 버전을 바꾸면 `sw.js`의 LIBS와 CACHE 이름(todo-offline-vN)도 같이 올릴 것
+- 반복 할 일: todos에 seriesId·repeat('weekly'|'monthly'), 끝나는 날까지 미리 만들어 저장
 - 로컬 DB: `db.js` — Dexie.js로 IndexedDB `princessTodo` 사용 (todos / hearts(날짜별) / cache(날씨) / diaries(날짜별 일기) / settings(profile: 이름·생년월일))
 - 화면: 한 HTML 안에 page-home / add / done / diary / settings, 주소 #해시로 전환. 각 화면은 100dvh 한 화면(페이지 스크롤 없음), 목록·일기만 안에서 스크롤. 기준 iPhone 15/16 (393×852). 서버 저장 없음.
 - 라이브러리(CDN): Dexie 4.0.8, FullCalendar 6.1.15 (2주 달력)
