@@ -725,7 +725,7 @@
     ? navigator.serviceWorker.register('sw.js').then(r => (swReg = r)).catch(() => null) : Promise.resolve(null);
   async function sendNotification(body, tag) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    const opts = { body, tag, icon: 'icons/icon-192.png', badge: 'icons/badge-96.png' };   // 배지는 상단바용 흰 하트
+    const opts = { body, tag, icon: 'icons/icon-192.png', badge: 'icons/badge-96.png' };   // 배지는 상단바용 흰 TO/DO
     try { if (swReg) { await swReg.showNotification('₊‧Todo‧₊', opts); return; } } catch (e) {}
     try { new Notification('₊‧Todo‧₊', opts); } catch (e) {}
   }

@@ -41,6 +41,8 @@
   --f-body: "Gowun Dodum", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
 }
 html, body { height: 100%; }
+/* 폰에서 누를 때 생기는 파란(회색) 네모 하이라이트 없애기. 키보드 이동 때 테두리(:focus-visible)는 그대로 */
+* { -webkit-tap-highlight-color: transparent; }
 body {
   background: linear-gradient(180deg, var(--blush) 0%, var(--sky) 38%, var(--lilac) 75%, var(--blush) 100%) fixed;
   color: var(--ink);
