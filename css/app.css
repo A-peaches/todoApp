@@ -142,10 +142,10 @@ body {
 .week { padding: 38px 14px 16px; min-width: 0; text-align: center; display: flex; flex-direction: column; }
 .todo-list { list-style: none; flex: 1; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow-y: auto; text-align: left; }
 .todo-list li {
-  display: grid; grid-template-columns: 14px 1fr auto; gap: 7px; align-items: center; min-width: 0;
+  display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 7px; align-items: center; min-width: 0;
   padding: 7px 9px; border-radius: 12px; background: rgba(var(--rose-soft-rgb),.35);
 }
-.todo-list li .t { overflow-wrap: anywhere; font-size: 12.5px; }
+.todo-list li .t { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 길면 한 줄에 ... (홈이 한 화면을 넘지 않게) */
 .todo-list li .d { font-family: var(--f-en); font-weight: 600; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .todo-list li svg { width: 13px; height: 12px; }
 .ico { display: grid; place-items: center; }

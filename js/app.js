@@ -40,7 +40,7 @@
       const [, m, d] = t.date.split('-');
       const isToday = t.date === todayIso;
       return '<li class="' + (isToday ? 'today' : '') + '" data-id="' + t.id + '" role="button" tabindex="0" aria-label="' + esc(t.title) + ' 완료하기">' +
-        heart + '<span class="t">' + esc(t.title) + '</span><span class="d">' + (isToday ? '오늘' : m + '.' + d) + '</span></li>';
+        heart + '<span class="t" title="' + esc(t.title) + '">' + esc(t.title) + '</span><span class="d">' + (isToday ? '오늘' : m + '.' + d) + '</span></li>';
     }).join('') : '<li class="empty">한동안 여유롭게 ・₊✧</li>';
   }
 
