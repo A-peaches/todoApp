@@ -87,6 +87,28 @@
     cache: {
       get: key => db.cache.get(key),
       set: (key, value) => db.cache.put({ key, value, savedAt: Date.now() })
+    },
+
+    // ---- 백업 / 복원: 할 일·하트·일기·프로필·테마·배경 사진을 JSON 하나로 ----
+    async exportAll() {
+      const [todos, hearts, diaries, settings] = await Promise.all([db.todos.toArray(), db.hearts.toArray(), db.diaries.toArray(), db.settings.toArray()]);
+      const toDataUrl = blob => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(blob); });
+      const outSettings = [];
+      for (const s of settings) outSettings.push(s.key === 'background' && s.blob ? { key: 'background', dataUrl: await toDataUrl(s.blob) } : s);
+      return { app: 'princess-todo', version: 1, exportedAt: new Date().toISOString(), todos, hearts, diaries, settings: outSettings };
+    },
+    async importAll(data) {
+      if (!data || data.app !== 'princess-todo' || !Array.isArray(data.todos)) throw new Error('백업 파일이 아니에요');
+      // 사진은 트랜잭션 밖에서 먼저 Blob으로 되돌림
+      const settings = [];
+      for (const s of data.settings || []) settings.push(s.key === 'background' && s.dataUrl ? { key: 'background', blob: await (await fetch(s.dataUrl)).blob() } : s);
+      await db.transaction('rw', db.todos, db.hearts, db.diaries, db.settings, async () => {
+        await Promise.all([db.todos.clear(), db.hearts.clear(), db.diaries.clear(), db.settings.clear()]);
+        await db.todos.bulkPut(data.todos);
+        await db.hearts.bulkPut(data.hearts || []);
+        await db.diaries.bulkPut(data.diaries || []);
+        await db.settings.bulkPut(settings);
+      });
     }
   };
 })();

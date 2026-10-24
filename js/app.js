@@ -662,6 +662,49 @@
   });
   showBackground(await PrincessDB.background.get());
 
+  // ---- 백업 / 복원 ----
+  const BACKUP_KEY = 'last-backup';
+  async function showBackupInfo() {
+    const last = await PrincessDB.cache.get(BACKUP_KEY);
+    document.getElementById('backupInfo').textContent = last ? '마지막 백업: ' + new Date(last.savedAt).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+  }
+  document.getElementById('backupSave').addEventListener('click', async () => {
+    const data = await PrincessDB.exportAll();
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const name = 'todo-backup-' + iso(new Date()) + '.json';
+    const file = new File([blob], name, { type: 'application/json' });
+    // 폰은 공유 시트(파일에 저장·카톡 등), 컴퓨터는 바로 다운로드
+    if (navigator.canShare && navigator.canShare({ files: [file] }) && /iPhone|iPad|Android/i.test(navigator.userAgent)) {
+      try { await navigator.share({ files: [file], title: name }); } catch (e) { if (e.name === 'AbortError') return; }
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+    await PrincessDB.cache.set(BACKUP_KEY, { name });
+    showBackupInfo();
+    showToast('백업 파일을 만들었어요 ・₊✧');
+  });
+  const backupFile = document.getElementById('backupFile');
+  document.getElementById('backupLoad').addEventListener('click', () => backupFile.click());
+  backupFile.addEventListener('change', async () => {
+    const file = backupFile.files && backupFile.files[0];
+    backupFile.value = '';
+    if (!file) return;
+    let data;
+    try { data = JSON.parse(await file.text()); } catch (e) { showToast('백업 파일을 읽을 수 없어요'); return; }
+    if (!data || data.app !== 'princess-todo') { showToast('이 앱의 백업 파일이 아니에요'); return; }
+    const when = data.exportedAt ? new Date(data.exportedAt).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+    if (!confirm(when + ' 백업으로 되돌릴까요?\n지금 있는 할 일·일기·설정은 백업 내용으로 바뀌어요.')) return;
+    try {
+      await PrincessDB.importAll(data);
+      showToast('백업을 불러왔어요. 새로 열게요');
+      setTimeout(() => location.reload(), 900);
+    } catch (e) { showToast('불러오지 못했어요: ' + (e.message || '알 수 없는 오류')); }
+  });
+  showBackupInfo();
+
   // ---- 알림: 7시 날씨 / 12시 점심 / 18시 하루 마무리 / 21시 내일 날씨 / 23시 굿나잇 ----
   // 1) 푸시 서버(push-server/, Cloudflare Workers)가 정각마다 보내면 앱을 닫아도 와요.
   // 2) 푸시를 못 쓰는 환경에서는 앱이 열려 있는 동안만 이 페이지가 직접 보내요.

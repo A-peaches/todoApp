@@ -274,6 +274,18 @@
     </div>
     <input type="file" id="bgFile" accept="image/*" hidden>
   </section>
+
+  <section class="card theme-card backup-card">
+    <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 13 C3 8 2 4 4.5 2 C7 0 10 2 11 4 C12 2 15 0 17.5 2 C20 4 19 8 11 13Z" fill="#fff"/></svg></div>
+    <div class="title-en">Backup</div>
+    <div class="opt-label">할 일·일기·하트·프로필·테마·배경 사진을 파일 하나로 저장해요. 폰을 바꾸거나 데이터가 지워졌을 때 불러오면 그대로 돌아와요.</div>
+    <div class="char-opts">
+      <button type="button" class="char-opt" id="backupSave">백업 파일 저장</button>
+      <button type="button" class="char-opt" id="backupLoad">백업 불러오기</button>
+    </div>
+    <div class="opt-label" id="backupInfo"></div>
+    <input type="file" id="backupFile" accept="application/json,.json" hidden>
+  </section>
 </div>
 
 <dialog class="add-dialog" id="profileDialog" aria-labelledby="pfTitle">
