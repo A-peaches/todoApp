@@ -209,6 +209,7 @@ body {
 .pcal .c { font-family: var(--f-en); font-weight: 600; font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 14px; }
 .pcal .c.has { color: var(--rose); font-weight: 700; }
 .pcal .c.has::before { content: "♡ "; font-weight: 400; }
+:root[data-char="clover"] .pcal .c.has::before { content: "☘\FE0E  "; }   /* 캐릭터가 클로버면 개수 앞도 클로버 (일기장 달력의 ✧는 그대로) */
 .pcal td.today .fc-daygrid-day-frame { background: linear-gradient(180deg, var(--rose-hi), var(--rose)); box-shadow: 0 0 0 2px var(--gold-hi), 0 4px 10px rgba(var(--rose-rgb),.3); color: var(--on-accent); }
 .pcal td.today .c { color: var(--on-accent); }
 .pcal td.first .fc-daygrid-day-frame { box-shadow: inset 0 0 0 1.5px var(--gold); }
