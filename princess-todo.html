@@ -202,6 +202,8 @@ body {
   font-family: var(--f-kr-display); font-weight: 700; font-size: 15px; color: #fff; letter-spacing: .04em;
   background: linear-gradient(180deg, #e88db0, var(--rose)); box-shadow: 0 0 0 1px var(--gold-hi), 0 8px 18px rgba(201,90,134,.3);
 }
+.add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.add-btn svg { width: 15px; height: 15px; }
 .add-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
 /* 할 일 입력 팝업 */
@@ -223,6 +225,39 @@ body {
 .dlg-actions .cancel { background: var(--rose-soft); color: var(--rose); }
 .dlg-actions .ok { background: linear-gradient(180deg, #e88db0, var(--rose)); color: #fff; }
 .dlg-actions .ok:disabled { opacity: .45; cursor: default; }
+
+/* ===== 일기장 화면 ===== */
+#page-diary { min-height: 100dvh; box-sizing: border-box; }
+.week-card { padding: 38px 10px 12px; text-align: center; }
+.week-card .month { font-family: var(--f-num); letter-spacing: .04em; text-transform: none; font-size: 17px; font-weight: normal; }
+.diary-card { flex: 1; display: flex; flex-direction: column; padding: 38px 16px 16px; text-align: center; min-height: 360px; }
+.diary-card .sel-date { font-family: var(--f-kr-display); font-weight: 700; font-size: 15px; margin-top: 8px; }
+.diary-text {
+  flex: 1; width: 100%; box-sizing: border-box; min-height: 260px; margin-top: 12px; resize: none;
+  border: 0; outline: none; padding: 4px 6px; border-radius: 0;
+  font: 14px/28px var(--f-kr-display); color: var(--ink); text-align: left;
+  background: repeating-linear-gradient(180deg, transparent 0 27px, rgba(201,90,134,.16) 27px 28px);
+  background-attachment: local;
+}
+.diary-text::placeholder { color: var(--muted); opacity: .8; }
+.diary-text.editing { box-shadow: inset 0 0 0 1px var(--rose-soft); border-radius: 12px; background-color: rgba(255,255,255,.6); }
+.diary-text[readonly] { cursor: default; }
+.diary-actions { position: relative; display: flex; align-items: center; justify-content: center; min-height: 56px; margin-top: 10px; }
+.diary-plus {
+  width: 56px; height: 56px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center; color: #fff;
+  background: linear-gradient(180deg, #e88db0, var(--rose)); box-shadow: 0 0 0 1px var(--gold-hi), 0 8px 18px rgba(201,90,134,.3);
+}
+.diary-plus svg { width: 22px; height: 22px; }
+.diary-plus:disabled { opacity: .45; cursor: default; }
+.diary-edit {
+  position: absolute; left: 0; bottom: 0; border: 0; cursor: pointer; border-radius: 99px; padding: 9px 18px;
+  font: 700 13px var(--f-body); color: var(--rose); background: linear-gradient(180deg, #fff, var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi);
+}
+.diary-edit.save { color: #fff; background: linear-gradient(180deg, #e88db0, var(--rose)); }
+.diary-plus:focus-visible, .diary-edit:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+#weekCal .c.has::before { content: "✧"; }
+.diary-actions [hidden] { display: none; }
+.diary-note { font-family: var(--f-kr-display); color: var(--muted); font-size: 13px; }
 
 /* 하단 탭바 */
 .nav {
@@ -248,7 +283,7 @@ body {
 
 .toast { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 99px; font-size: 12px; white-space: nowrap; z-index: 6; display: flex; align-items: center; gap: 10px; }
 .toast[hidden] { display: none; }
-#page-add:not([hidden]) ~ .toast { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }   /* 투두 추가하기 버튼 위로 */
+#page-add:not([hidden]) ~ .toast, #page-diary:not([hidden]) ~ .toast { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }   /* 투두 추가하기 버튼 위로 */
 .toast button { border: 0; background: none; color: var(--gold-hi); font: inherit; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline; }
 
 /* 숫자: 눈누 'OG 르네상스 비밀' 필기체 */
@@ -288,7 +323,7 @@ body {
   <section class="top">
     <div class="card week">
       <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 7 C6 0 1 1 1 5 C1 9 6 9 11 7Z M11 7 C16 0 21 1 21 5 C21 9 16 9 11 7Z" fill="#fff"/><circle cx="11" cy="7" r="2.2" fill="#f1dc9e"/></svg></div>
-      <div class="title-en">This Week</div>
+      <div class="title-en">One Week Ahead</div>
       <ul class="todo-list" id="weekList"></ul>
     </div>
 
@@ -368,7 +403,7 @@ body {
     <ul class="day-list" id="dayList"></ul>
   </section>
 
-  <button type="button" class="add-btn" id="addBtn">♡ 투두 추가하기</button>
+  <button type="button" class="add-btn" id="addBtn"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>투두 추가하기</button>
 </div>
 
 <dialog class="add-dialog" id="addDialog" aria-labelledby="dlgTitle">
@@ -401,6 +436,37 @@ body {
     </div>
     <div class="done-total" id="doneTotal"></div>
     <ul class="done-list" id="doneList"></ul>
+  </section>
+</div>
+
+<div class="app page" id="page-diary" hidden>
+  <header class="head">
+    <div class="head-text">
+      <div class="page-title">Dear Diary</div>
+      <div class="en-sub">one page for every day</div>
+    </div>
+  </header>
+
+  <section class="card week-card">
+    <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 1 L12.6 5.4 L17 7 L12.6 8.6 L11 13 L9.4 8.6 L5 7 L9.4 5.4Z" fill="#fff"/></svg></div>
+    <div class="month-nav">
+      <button type="button" id="weekPrev" aria-label="이전 주"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2L4 7l5 5"/></svg></button>
+      <div class="month" id="weekTitle" aria-live="polite"></div>
+      <button type="button" id="weekNext" aria-label="다음 주"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2l5 5-5 5"/></svg></button>
+    </div>
+    <div id="weekCal" class="pcal pcal-month"></div>
+  </section>
+
+  <section class="card diary-card">
+    <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 13 C3 8 2 4 4.5 2 C7 0 10 2 11 4 C12 2 15 0 17.5 2 C20 4 19 8 11 13Z" fill="#fff"/></svg></div>
+    <div class="title-en">Dear Diary</div>
+    <div class="sel-date" id="diaryDate"></div>
+    <textarea class="diary-text" id="diaryText" aria-label="일기"></textarea>
+    <div class="diary-actions">
+      <button type="button" class="diary-edit" id="diaryEdit" hidden>수정</button>
+      <button type="button" class="diary-plus" id="diaryPlus" aria-label="일기 저장" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+      <span class="diary-note" id="diaryNote" hidden>아직 오지 않은 날이에요 ・₊✧</span>
+    </div>
   </section>
 </div>
 
@@ -766,8 +832,101 @@ body {
   document.getElementById('donePrev').addEventListener('click', () => { doneMonth = new Date(doneMonth.getFullYear(), doneMonth.getMonth() - 1, 1); renderDone(); });
   document.getElementById('doneNext').addEventListener('click', () => { doneMonth = new Date(doneMonth.getFullYear(), doneMonth.getMonth() + 1, 1); renderDone(); });
 
+  // ---- 일기장: 주 단위 달력 + 하루 한 장 일기 ----
+  // 상태: 비어 있음(입력 + 가운데 + 로 저장) / 보기(왼쪽 아래 '수정') / 수정 중(같은 버튼이 '저장')
+  let diaryDay = todayIso, diaryEditing = false, diarySaved = '', weekCal;
+  const diaryText = document.getElementById('diaryText'), diaryEdit = document.getElementById('diaryEdit'),
+    diaryPlus = document.getElementById('diaryPlus'), diaryNote = document.getElementById('diaryNote');
+  const diaryDirty = () => diaryEditing && diaryText.value !== diarySaved;
+
+  async function renderWeekCal() {
+    const written = new Set(await PrincessDB.diaries.dates());
+    const shown = weekCal ? weekCal.getDate() : fromIso(diaryDay);
+    if (weekCal) weekCal.destroy();
+    weekCal = new FullCalendar.Calendar(document.getElementById('weekCal'), {
+      initialView: 'dayGridWeek',
+      initialDate: shown,
+      firstDay: 0,
+      headerToolbar: false,
+      height: 'auto',
+      dayHeaderContent: arg => WK[arg.date.getDay()],
+      dayHeaderClassNames: arg => arg.date.getDay() === 0 ? ['sun'] : arg.date.getDay() === 6 ? ['sat'] : [],
+      dayCellClassNames: arg => iso(arg.date) === todayIso ? ['today'] : [],
+      dayCellContent: arg => {
+        const has = written.has(iso(arg.date));
+        return { html: '<span class="n">' + arg.date.getDate() + '</span><span class="c' + (has ? ' has' : '') + '">' + (has ? '' : '·') + '</span>' };
+      },
+      dayCellDidMount: arg => {
+        const k = iso(arg.date), td = arg.el;
+        td.tabIndex = 0;
+        td.setAttribute('role', 'button');
+        td.setAttribute('aria-label', krDate(k) + (written.has(k) ? ', 일기 있음' : ''));
+        td.addEventListener('click', () => openDiary(k));
+        td.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDiary(k); } });
+      },
+      datesSet: info => {
+        const a = info.start, b = addDays(info.start, 6);
+        document.getElementById('weekTitle').textContent = pad(a.getMonth() + 1) + '.' + pad(a.getDate()) + ' – ' + pad(b.getMonth() + 1) + '.' + pad(b.getDate());
+        markDiaryDay();
+      }
+    });
+    weekCal.render();
+    markDiaryDay();
+  }
+  function markDiaryDay() {
+    document.querySelectorAll('#weekCal td.fc-daygrid-day').forEach(td => {
+      td.classList.toggle('sel', td.dataset.date === diaryDay);
+      td.setAttribute('aria-pressed', td.dataset.date === diaryDay);
+    });
+  }
+  const leaveOk = () => !diaryDirty() || confirm('저장하지 않은 일기가 있어요. 그래도 이동할까요?');
+  document.getElementById('weekPrev').addEventListener('click', () => weekCal.prev());
+  document.getElementById('weekNext').addEventListener('click', () => weekCal.next());
+
+  function setDiaryMode(mode) {   // 'empty' | 'view' | 'edit' | 'future'
+    diaryEditing = mode === 'empty' || mode === 'edit';
+    diaryText.readOnly = !diaryEditing;
+    diaryText.classList.toggle('editing', diaryEditing);
+    diaryPlus.hidden = mode !== 'empty';
+    diaryPlus.disabled = !diaryText.value.trim();
+    diaryEdit.hidden = !(mode === 'view' || mode === 'edit');
+    diaryEdit.textContent = mode === 'edit' ? '저장' : '수정';
+    diaryEdit.classList.toggle('save', mode === 'edit');
+    diaryNote.hidden = mode !== 'future';
+  }
+  async function openDiary(k) {
+    if (k !== diaryDay && !leaveOk()) return;
+    diaryDay = k;
+    markDiaryDay();
+    document.getElementById('diaryDate').textContent = krDate(k) + (k === todayIso ? ' · 오늘' : '');
+    const d = await PrincessDB.diaries.get(k);
+    diarySaved = d ? d.text : '';
+    diaryText.value = diarySaved;
+    diaryText.placeholder = k === todayIso ? '오늘의 일기를 작성해 주세요 ・₊✧' : '이 날의 일기를 작성해 주세요 ・₊✧';
+    if (d) setDiaryMode('view');
+    else if (k > todayIso) { diaryText.placeholder = ''; setDiaryMode('future'); }
+    else setDiaryMode('empty');
+  }
+  async function saveDiary() {
+    const text = diaryText.value.replace(/\s+$/, '');
+    if (text.trim()) await PrincessDB.diaries.save(diaryDay, text);
+    else await PrincessDB.diaries.remove(diaryDay);   // 다 지우고 저장하면 그 날 일기 삭제
+    diarySaved = text;
+    await renderWeekCal();
+    await openDiary(diaryDay);
+    showToast(text.trim() ? '일기를 저장했어요 ・₊✧' : '일기를 지웠어요');
+  }
+  diaryText.addEventListener('input', () => { diaryPlus.disabled = !diaryText.value.trim(); });
+  diaryPlus.addEventListener('click', saveDiary);
+  diaryEdit.addEventListener('click', () => {
+    if (diaryEditing) { saveDiary(); return; }
+    setDiaryMode('edit');
+    diaryText.focus();
+    diaryText.setSelectionRange(diaryText.value.length, diaryText.value.length);
+  });
+
   // ---- 화면 전환 (하단 탭바, 주소 #add 로 뒤로가기 지원) ----
-  const PAGES = { home: 'page-home', add: 'page-add', done: 'page-done' };
+  const PAGES = { home: 'page-home', add: 'page-add', done: 'page-done', diary: 'page-diary' };
   function showPage(name) {
     if (!PAGES[name]) name = 'home';
     Object.entries(PAGES).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
@@ -776,10 +935,12 @@ body {
     });
     if (name === 'add') { renderMonth(); renderDay(); }
     if (name === 'done') renderDone();
+    if (name === 'diary') { diaryDay = todayIso; if (weekCal) { weekCal.destroy(); weekCal = null; } renderWeekCal(); openDiary(todayIso); }
     window.scrollTo(0, 0);
   }
   document.querySelectorAll('.nav button').forEach(b => b.addEventListener('click', () => {
     const page = b.dataset.page;
+    if (!document.getElementById('page-diary').hidden && page !== 'diary' && !leaveOk()) return;
     if (!PAGES[page]) { showToast(esc(b.textContent.trim()) + ' 화면은 다음에 같이 만들어요 ♡'); return; }
     if (location.hash !== '#' + page) location.hash = page === 'home' ? '' : page;
     else showPage(page);

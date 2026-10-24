@@ -8,6 +8,9 @@
     hearts: 'date',      // { date: 'YYYY-MM-DD', count }  하루에 한 줄
     cache: 'key'         // { key, value, savedAt }  날씨 같은 임시 데이터
   });
+  db.version(2).stores({
+    diaries: 'date'      // { date: 'YYYY-MM-DD', text, createdAt, updatedAt }  하루에 일기 하나
+  });
 
   const newId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
     : Date.now().toString(36) + Math.random().toString(36).slice(2);
@@ -40,6 +43,16 @@
         await db.hearts.put({ date, count });
         return count;
       })
+    },
+
+    diaries: {
+      get: date => db.diaries.get(date),
+      dates: () => db.diaries.toCollection().primaryKeys(),
+      async save(date, text) {
+        const old = await db.diaries.get(date), at = new Date().toISOString();
+        await db.diaries.put({ date, text, createdAt: old ? old.createdAt : at, updatedAt: at });
+      },
+      remove: date => db.diaries.delete(date)
     },
 
     cache: {
