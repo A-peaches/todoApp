@@ -84,8 +84,8 @@ body {
 .top { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; align-items: stretch; }
 
 /* 이번 주 할 일 */
-.week { padding: 38px 14px 16px; min-width: 0; text-align: center; }
-.todo-list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 236px; overflow-y: auto; text-align: left; }
+.week { padding: 38px 14px 16px; min-width: 0; text-align: center; display: flex; flex-direction: column; }
+.todo-list { list-style: none; flex: 1; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 236px; overflow-y: auto; text-align: left; }
 .todo-list li {
   display: grid; grid-template-columns: 14px 1fr auto; gap: 7px; align-items: center; min-width: 0;
   padding: 7px 9px; border-radius: 12px; background: rgba(247,213,227,.35);
@@ -101,7 +101,7 @@ body {
 .todo-list li.checked .t { text-decoration: line-through; text-decoration-color: var(--rose); color: var(--muted); }
 .todo-list li.checked svg path { fill: var(--gold); }
 .todo-list li.leaving { opacity: 0; transform: translateX(14px); }
-.empty { font-family: var(--f-kr-display); color: var(--muted); padding: 10px 0; background: none !important; }
+.todo-list li.empty { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; font-family: var(--f-kr-display); font-size: 13.5px; color: var(--muted); padding: 10px 0; background: none; }
 
 /* 오른쪽 */
 .side { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -323,7 +323,7 @@ body {
       const isToday = t.date === todayIso;
       return '<li class="' + (isToday ? 'today' : '') + '" data-id="' + t.id + '" role="button" tabindex="0" aria-label="' + esc(t.title) + ' 완료하기">' +
         heart + '<span class="t">' + esc(t.title) + '</span><span class="d">' + (isToday ? '오늘' : m + '.' + d) + '</span></li>';
-    }).join('') : '<li class="empty">이번 주는 여유로운 궁전이에요 ♡<br><small>아래 \'할 일 등록\'에서 추가해요</small></li>';
+    }).join('') : '<li class="empty">이번 주는 여유롭게 ♡</li>';
   }
 
   // 할 일 누르면 완료 처리 (토스트에서 되돌리기 가능)
