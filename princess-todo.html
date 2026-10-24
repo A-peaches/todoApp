@@ -133,25 +133,86 @@ body {
 /* 2주 달력 (FullCalendar dayGrid 2주 보기, 기본 스타일 위에 덮어쓰기) */
 .cal { padding: 38px 12px 16px; text-align: center; }
 .month { font-family: var(--f-en); font-weight: 600; font-size: 14px; letter-spacing: .18em; color: var(--gold); margin: 10px 0 8px; text-transform: uppercase; }
-#calendar { --fc-border-color: transparent; --fc-today-bg-color: transparent; --fc-page-bg-color: transparent; font-family: var(--f-body); }
-#calendar .fc-col-header-cell-cushion { padding: 0 0 4px; font-size: 10px; font-weight: 400; color: var(--muted); text-decoration: none; }
-#calendar .fc-col-header-cell.sun .fc-col-header-cell-cushion { color: var(--rose); }
-#calendar .fc-col-header-cell.sat .fc-col-header-cell-cushion { color: #6f8cc4; }
-#calendar td.fc-daygrid-day { padding: 3px 2px; }
-#calendar .fc-daygrid-day-frame {
+.pcal { --fc-border-color: transparent; --fc-today-bg-color: transparent; --fc-page-bg-color: transparent; font-family: var(--f-body); }
+.pcal .fc-col-header-cell-cushion { padding: 0 0 4px; font-size: 10px; font-weight: 400; color: var(--muted); text-decoration: none; }
+.pcal .fc-col-header-cell.sun .fc-col-header-cell-cushion { color: var(--rose); }
+.pcal .fc-col-header-cell.sat .fc-col-header-cell-cushion { color: #6f8cc4; }
+.pcal td.fc-daygrid-day { padding: 3px 2px; }
+.pcal .fc-daygrid-day-frame {
   min-height: 0; padding: 7px 0 6px; border-radius: 14px; background: rgba(255,255,255,.7);
   box-shadow: inset 0 0 0 1px var(--rose-soft);
 }
-#calendar .fc-daygrid-day-events, #calendar .fc-daygrid-day-bg { display: none; }
-#calendar .fc-daygrid-day-top { justify-content: center; }
-#calendar .fc-daygrid-day-number { padding: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; color: inherit; text-decoration: none; }
-#calendar .n { font-family: var(--f-en); font-weight: 600; font-size: 17.5px; line-height: 1; font-variant-numeric: tabular-nums; }
-#calendar .c { font-family: var(--f-en); font-weight: 600; font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 14px; }
-#calendar .c.has { color: var(--rose); font-weight: 700; }
-#calendar .c.has::before { content: "♡ "; font-weight: 400; }
-#calendar td.today .fc-daygrid-day-frame { background: linear-gradient(180deg, #e88db0, var(--rose)); box-shadow: 0 0 0 2px var(--gold-hi), 0 4px 10px rgba(201,90,134,.3); color: #fff; }
-#calendar td.today .c { color: #fff; }
-#calendar td.first .fc-daygrid-day-frame { box-shadow: inset 0 0 0 1.5px var(--gold); }
+.pcal .fc-daygrid-day-events, .pcal .fc-daygrid-day-bg { display: none; }
+.pcal .fc-daygrid-day-top { justify-content: center; }
+.pcal .fc-daygrid-day-number { padding: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; color: inherit; text-decoration: none; }
+.pcal .n { font-family: var(--f-en); font-weight: 600; font-size: 17.5px; line-height: 1; font-variant-numeric: tabular-nums; }
+.pcal .c { font-family: var(--f-en); font-weight: 600; font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 14px; }
+.pcal .c.has { color: var(--rose); font-weight: 700; }
+.pcal .c.has::before { content: "♡ "; font-weight: 400; }
+.pcal td.today .fc-daygrid-day-frame { background: linear-gradient(180deg, #e88db0, var(--rose)); box-shadow: 0 0 0 2px var(--gold-hi), 0 4px 10px rgba(201,90,134,.3); color: #fff; }
+.pcal td.today .c { color: #fff; }
+.pcal td.first .fc-daygrid-day-frame { box-shadow: inset 0 0 0 1.5px var(--gold); }
+
+/* ===== 할 일 등록 화면 ===== */
+.page[hidden] { display: none !important; }
+.page-title { font-family: var(--f-en); font-style: italic; font-weight: 600; font-size: 29.5px; color: var(--ink); letter-spacing: .02em; }
+.month-card { padding: 38px 10px 14px; text-align: center; }
+.month-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 8px 0 6px; }
+.month-nav .month { margin: 0; min-width: 150px; }
+.month-nav button {
+  width: 30px; height: 30px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center;
+  background: linear-gradient(180deg, #fff, var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi); color: var(--rose);
+}
+.month-nav button svg { width: 14px; height: 14px; }
+.pcal-month td.fc-daygrid-day { padding: 2px 1px; cursor: pointer; }
+.pcal-month .fc-daygrid-day-frame { padding: 6px 0 4px; border-radius: 12px; }
+.pcal-month .n { font-size: 15px; }
+.pcal-month .c { font-size: 9.5px; min-height: 12px; }
+.pcal-month td.fc-day-other .fc-daygrid-day-frame { opacity: .35; }
+.pcal-month td.sel .fc-daygrid-day-frame { box-shadow: 0 0 0 2px var(--rose), 0 4px 10px rgba(201,90,134,.22); background: #fff; }
+.pcal-month td.today.sel .fc-daygrid-day-frame { box-shadow: 0 0 0 2px var(--gold), 0 4px 10px rgba(201,90,134,.3); background: linear-gradient(180deg, #e88db0, var(--rose)); }
+.pcal-month td.fc-daygrid-day:focus-visible { outline: 2px solid var(--gold); outline-offset: -1px; border-radius: 12px; }
+
+.dayplan { padding: 38px 14px 16px; text-align: center; }
+.dayplan .sel-date { font-family: var(--f-kr-display); font-weight: 700; font-size: 15px; margin-top: 8px; }
+.day-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.day-list li { display: grid; grid-template-columns: 28px 1fr 28px; gap: 4px; align-items: center; padding: 4px 6px; border-radius: 12px; background: rgba(247,213,227,.35); }
+.day-list li .t { overflow-wrap: anywhere; font-size: 12.5px; }
+.day-list li.done .t { text-decoration: line-through; text-decoration-color: var(--rose); color: var(--muted); }
+.day-list li.done .chk svg path { fill: var(--gold); }
+.day-list button { width: 28px; height: 28px; border: 0; background: none; cursor: pointer; display: grid; place-items: center; padding: 0; border-radius: 50%; color: var(--muted); }
+.day-list button:focus-visible { outline: 2px solid var(--gold); }
+.day-list .chk svg { width: 14px; height: 13px; }
+.day-list .del { font-size: 17px; line-height: 1; }
+.day-list .day-empty { display: block; text-align: center; background: none; font-family: var(--f-kr-display); color: var(--muted); padding: 14px 0 6px; font-size: 13px; }
+
+.add-btn {
+  position: sticky; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 4;
+  width: 100%; border: 0; cursor: pointer; border-radius: 99px; padding: 14px 0;
+  font-family: var(--f-kr-display); font-weight: 700; font-size: 15px; color: #fff; letter-spacing: .04em;
+  background: linear-gradient(180deg, #e88db0, var(--rose)); box-shadow: 0 0 0 1px var(--gold-hi), 0 8px 18px rgba(201,90,134,.3);
+}
+.add-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+/* 할 일 입력 팝업 */
+.add-dialog {
+  width: min(340px, calc(100vw - 32px)); border: 0; padding: 0; border-radius: 26px; color: var(--ink);
+  background: rgba(255,255,255,.94); box-shadow: 0 0 0 1px var(--rose-soft), 0 20px 50px rgba(110,70,120,.3);
+}
+.add-dialog::backdrop { background: rgba(76,47,69,.28); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.add-dialog form { position: relative; padding: 40px 18px 18px; text-align: center; }
+.add-dialog .tab { top: 0; }
+.add-dialog .dlg-date { font-family: var(--f-kr-display); font-size: 13px; color: var(--muted); margin-top: 6px; }
+.add-dialog input {
+  width: 100%; box-sizing: border-box; margin-top: 14px; padding: 12px 14px; border-radius: 14px;
+  border: 1px solid var(--rose-soft); background: #fff; font: 15px var(--f-body); color: var(--ink); outline: none;
+}
+.add-dialog input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(201,90,134,.15); }
+.dlg-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.dlg-actions button { border: 0; border-radius: 99px; padding: 11px 0; cursor: pointer; font: 700 14px var(--f-body); }
+.dlg-actions .cancel { background: var(--rose-soft); color: var(--rose); }
+.dlg-actions .ok { background: linear-gradient(180deg, #e88db0, var(--rose)); color: #fff; }
+.dlg-actions .ok:disabled { opacity: .45; cursor: default; }
 
 /* 하단 탭바 */
 .nav {
@@ -177,10 +238,11 @@ body {
 
 .toast { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 99px; font-size: 12px; white-space: nowrap; z-index: 6; display: flex; align-items: center; gap: 10px; }
 .toast[hidden] { display: none; }
+#page-add:not([hidden]) ~ .toast { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }   /* 투두 추가하기 버튼 위로 */
 .toast button { border: 0; background: none; color: var(--gold-hi); font: inherit; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline; }
 
 /* 숫자: 눈누 'OG 르네상스 비밀' 필기체 */
-.date, .todo-list li .d, .temps, #calendar .n, #calendar .c { font-family: var(--f-num); font-weight: normal; font-style: normal; }
+.date, .todo-list li .d, .temps, .pcal .n, .pcal .c { font-family: var(--f-num); font-weight: normal; font-style: normal; }
 .todo-list li.today .d { font-family: var(--f-body); }
 
 @media (max-width: 360px) {
@@ -194,7 +256,7 @@ body {
 
 <canvas id="snow" aria-hidden="true"></canvas>
 
-<div class="app">
+<div class="app page" id="page-home">
   <header class="head">
     <svg class="cal-ico" viewBox="0 0 42 44" aria-hidden="true">
       <defs>
@@ -266,9 +328,51 @@ body {
     <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 1 L12.6 5.4 L17 7 L12.6 8.6 L11 13 L9.4 8.6 L5 7 L9.4 5.4Z" fill="#fff"/></svg></div>
     <div class="title-en">Two Weeks Ahead</div>
     <div class="month" id="monthLabel">October</div>
-    <div id="calendar"></div>
+    <div id="calendar" class="pcal"></div>
   </section>
 </div>
+
+<div class="app page" id="page-add" hidden>
+  <header class="head">
+    <div class="head-text">
+      <div class="page-title">Add To-Do</div>
+      <div class="en-sub">pick a day, write a little wish</div>
+    </div>
+  </header>
+
+  <section class="card month-card">
+    <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 1 L12.6 5.4 L17 7 L12.6 8.6 L11 13 L9.4 8.6 L5 7 L9.4 5.4Z" fill="#fff"/></svg></div>
+    <div class="title-en">This Month</div>
+    <div class="month-nav">
+      <button type="button" id="prevMonth" aria-label="이전 달"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2L4 7l5 5"/></svg></button>
+      <div class="month" id="monthTitle">October 2026</div>
+      <button type="button" id="nextMonth" aria-label="다음 달"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2l5 5-5 5"/></svg></button>
+    </div>
+    <div id="monthCal" class="pcal pcal-month"></div>
+  </section>
+
+  <section class="card dayplan">
+    <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 7 C6 0 1 1 1 5 C1 9 6 9 11 7Z M11 7 C16 0 21 1 21 5 C21 9 16 9 11 7Z" fill="#fff"/><circle cx="11" cy="7" r="2.2" fill="#f1dc9e"/></svg></div>
+    <div class="title-en">Day Plan</div>
+    <div class="sel-date" id="selDate" aria-live="polite"></div>
+    <ul class="day-list" id="dayList"></ul>
+  </section>
+
+  <button type="button" class="add-btn" id="addBtn">♡ 투두 추가하기</button>
+</div>
+
+<dialog class="add-dialog" id="addDialog" aria-labelledby="dlgTitle">
+  <form method="dialog" id="addForm">
+    <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 13 C3 8 2 4 4.5 2 C7 0 10 2 11 4 C12 2 15 0 17.5 2 C20 4 19 8 11 13Z" fill="#fff"/></svg></div>
+    <div class="title-en" id="dlgTitle">New To-Do</div>
+    <div class="dlg-date" id="dlgDate"></div>
+    <input type="text" id="todoInput" maxlength="40" placeholder="예: 도서관 책 반납하기" autocomplete="off" aria-label="할 일">
+    <div class="dlg-actions">
+      <button type="button" class="cancel" id="dlgCancel">취소</button>
+      <button type="submit" class="ok" id="dlgOk" disabled>확인</button>
+    </div>
+  </form>
+</dialog>
 
 <nav class="nav" aria-label="메뉴">
   <ul>
@@ -506,10 +610,133 @@ body {
     bh.classList.remove('pop'); void bh.offsetWidth; bh.classList.add('pop');
     showHearts(await PrincessDB.hearts.add(iso(new Date())));
   });
+
+  // ---- 할 일 등록 화면 ----
+  const KR_DAYS = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+  const fromIso = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
+  const krDate = k => { const d = fromIso(k); return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + KR_DAYS[d.getDay()]; };
+  let selected = todayIso;
+  let monthCal;
+
+  // 데이터가 바뀌면 두 화면 모두 다시 그림
+  async function refreshAll() {
+    todos = await PrincessDB.todos.all();
+    renderWeek(); renderCal(); renderMonth(); renderDay();
+  }
+
+  function markSelected() {
+    document.querySelectorAll('#monthCal td.fc-daygrid-day').forEach(td => {
+      const on = td.dataset.date === selected;
+      td.classList.toggle('sel', on);
+      td.setAttribute('aria-pressed', on);
+    });
+  }
+  function selectDate(k) { selected = k; markSelected(); renderDay(); }
+
+  function renderMonth() {
+    const counts = {};
+    todos.forEach(t => { counts[t.date] = (counts[t.date] || 0) + 1; });
+    const shown = monthCal ? monthCal.getDate() : now;
+    if (monthCal) monthCal.destroy();
+    monthCal = new FullCalendar.Calendar(document.getElementById('monthCal'), {
+      initialView: 'dayGridMonth',
+      initialDate: shown,
+      firstDay: 0,
+      fixedWeekCount: false,
+      headerToolbar: false,
+      height: 'auto',
+      dayHeaderContent: arg => WK[arg.date.getDay()],
+      dayHeaderClassNames: arg => arg.date.getDay() === 0 ? ['sun'] : arg.date.getDay() === 6 ? ['sat'] : [],
+      dayCellClassNames: arg => iso(arg.date) === todayIso ? ['today'] : [],
+      dayCellContent: arg => {
+        const c = counts[iso(arg.date)] || 0;
+        return { html: '<span class="n">' + arg.date.getDate() + '</span><span class="c' + (c ? ' has' : '') + '">' + (c || '·') + '</span>' };
+      },
+      dayCellDidMount: arg => {
+        const k = iso(arg.date), td = arg.el;
+        td.tabIndex = 0;
+        td.setAttribute('role', 'button');
+        td.setAttribute('aria-label', krDate(k) + ', 할 일 ' + (counts[k] || 0) + '개');
+        td.addEventListener('click', () => selectDate(k));
+        td.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectDate(k); } });
+      },
+      datesSet: () => {
+        const d = monthCal ? monthCal.getDate() : shown;
+        document.getElementById('monthTitle').textContent = EN_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+        markSelected();
+      }
+    });
+    monthCal.render();
+    markSelected();
+  }
+  document.getElementById('prevMonth').addEventListener('click', () => monthCal.prev());
+  document.getElementById('nextMonth').addEventListener('click', () => monthCal.next());
+
+  // 선택한 날짜의 할 일 목록 (하트 = 완료 토글, × = 삭제)
+  const dayList = document.getElementById('dayList');
+  function renderDay() {
+    document.getElementById('selDate').textContent = krDate(selected) + (selected === todayIso ? ' · 오늘' : '');
+    const list = todos.filter(t => t.date === selected).sort((a, b) => (a.done - b.done) || a.createdAt.localeCompare(b.createdAt));
+    dayList.innerHTML = list.length ? list.map(t =>
+      '<li class="' + (t.done ? 'done' : '') + '" data-id="' + t.id + '">' +
+        '<button type="button" class="chk" aria-label="' + esc(t.title) + (t.done ? ' 완료 취소' : ' 완료하기') + '">' + heart + '</button>' +
+        '<span class="t">' + esc(t.title) + '</span>' +
+        '<button type="button" class="del" aria-label="' + esc(t.title) + ' 삭제">×</button></li>'
+    ).join('') : '<li class="day-empty">이 날은 아직 비어 있어요 ♡</li>';
+  }
+  dayList.addEventListener('click', async e => {
+    const li = e.target.closest('li[data-id]');
+    if (!li) return;
+    const t = todos.find(x => x.id === li.dataset.id);
+    if (e.target.closest('.chk')) {
+      await PrincessDB.todos.setDone(t.id, !t.done);
+      refreshAll();
+    } else if (e.target.closest('.del')) {
+      await PrincessDB.todos.remove(t.id);
+      refreshAll();
+      showToast(esc(t.title) + ' 삭제했어요', '되돌리기', async () => { await PrincessDB.todos.restore(t); refreshAll(); });
+    }
+  });
+
+  // 투두 추가 팝업
+  const dlg = document.getElementById('addDialog'), input = document.getElementById('todoInput'), okBtn = document.getElementById('dlgOk');
+  document.getElementById('addBtn').addEventListener('click', () => {
+    document.getElementById('dlgDate').textContent = krDate(selected) + '에 추가해요';
+    input.value = ''; okBtn.disabled = true;
+    dlg.showModal(); input.focus();
+  });
+  input.addEventListener('input', () => { okBtn.disabled = !input.value.trim(); });
+  document.getElementById('dlgCancel').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });   // 바깥 누르면 닫기
+  document.getElementById('addForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const title = input.value.trim();
+    if (!title) return;
+    await PrincessDB.todos.add(title, selected);
+    dlg.close();
+    await refreshAll();
+    showToast(esc(title) + ' 추가했어요 ♡');
+  });
+
+  // ---- 화면 전환 (하단 탭바, 주소 #add 로 뒤로가기 지원) ----
+  const PAGES = { home: 'page-home', add: 'page-add' };
+  function showPage(name) {
+    if (!PAGES[name]) name = 'home';
+    Object.entries(PAGES).forEach(([k, id]) => { document.getElementById(id).hidden = k !== name; });
+    document.querySelectorAll('.nav button').forEach(b => {
+      if (b.dataset.page === name) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    if (name === 'add') { renderMonth(); renderDay(); }
+    window.scrollTo(0, 0);
+  }
   document.querySelectorAll('.nav button').forEach(b => b.addEventListener('click', () => {
-    if (b.dataset.page === 'home') return;
-    showToast(esc(b.textContent.trim()) + ' 화면은 다음에 같이 만들어요 ♡');
+    const page = b.dataset.page;
+    if (!PAGES[page]) { showToast(esc(b.textContent.trim()) + ' 화면은 다음에 같이 만들어요 ♡'); return; }
+    if (location.hash !== '#' + page) location.hash = page === 'home' ? '' : page;
+    else showPage(page);
   }));
+  window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
+  showPage(location.hash.slice(1));
 
   // ---- 픽셀 토끼 (꼬물꼬물 + 하트) ----
   (function () {

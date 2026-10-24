@@ -28,7 +28,8 @@
         return t;
       },
       setDone: (id, done) => db.todos.update(id, { done, doneAt: done ? new Date().toISOString() : null }),
-      remove: id => db.todos.delete(id)
+      remove: id => db.todos.delete(id),
+      restore: t => db.todos.put(t)   // 삭제 되돌리기
     },
 
     hearts: {
