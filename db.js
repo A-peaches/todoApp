@@ -34,8 +34,18 @@
         return t;
       },
       setDone: (id, done) => db.todos.update(id, { done, doneAt: done ? new Date().toISOString() : null }),
+      // 반복 할 일: 같은 seriesId로 여러 날짜를 한 번에
+      async addSeries(title, dates, repeat) {
+        const seriesId = newId(), createdAt = new Date().toISOString();
+        const list = dates.map(date => ({ id: newId(), title, date, done: false, doneAt: null, createdAt, seriesId, repeat }));
+        await db.todos.bulkAdd(list);
+        return list;
+      },
+      update: (id, changes) => db.todos.update(id, changes),
       remove: id => db.todos.delete(id),
-      restore: t => db.todos.put(t)   // 삭제 되돌리기
+      removeMany: ids => db.todos.bulkDelete(ids),
+      restore: t => db.todos.put(t),               // 삭제 되돌리기
+      restoreMany: list => db.todos.bulkPut(list)
     },
 
     hearts: {

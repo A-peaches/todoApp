@@ -344,7 +344,8 @@
   document.getElementById('prevMonth').addEventListener('click', () => monthCal.prev());
   document.getElementById('nextMonth').addEventListener('click', () => monthCal.next());
 
-  // 선택한 날짜의 할 일 목록 (하트 = 완료 토글, × = 삭제)
+  // 선택한 날짜의 할 일 목록 (하트 = 완료 토글, 연필 = 수정, × = 삭제)
+  const PENCIL = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 2.5l3 3L6 13H3v-3z"/><path d="M9 4l3 3"/></svg>';
   const dayList = document.getElementById('dayList');
   function renderDay() {
     document.getElementById('selDate').textContent = krDate(selected) + (selected === todayIso ? ' · 오늘' : '');
@@ -352,7 +353,8 @@
     dayList.innerHTML = list.length ? list.map(t =>
       '<li class="' + (t.done ? 'done' : '') + '" data-id="' + t.id + '">' +
         '<button type="button" class="chk" aria-label="' + esc(t.title) + (t.done ? ' 완료 취소' : ' 완료하기') + '">' + heart + '</button>' +
-        '<span class="t">' + esc(t.title) + '</span>' +
+        '<span class="t">' + esc(t.title) + (t.seriesId ? '<span class="rep" title="반복">↻ ' + (t.repeat === 'weekly' ? '매주' : '매달') + '</span>' : '') + '</span>' +
+        '<button type="button" class="edit" aria-label="' + esc(t.title) + ' 수정">' + PENCIL + '</button>' +
         '<button type="button" class="del" aria-label="' + esc(t.title) + ' 삭제">×</button></li>'
     ).join('') : '<li class="day-empty">이 날은 아직 비어 있어요 ・₊✧</li>';
   }
@@ -363,31 +365,118 @@
     if (e.target.closest('.chk')) {
       await PrincessDB.todos.setDone(t.id, !t.done);
       refreshAll();
+    } else if (e.target.closest('.edit')) {
+      openTodoDialog(t);
     } else if (e.target.closest('.del')) {
-      await PrincessDB.todos.remove(t.id);
-      refreshAll();
-      showToast(esc(t.title) + ' 삭제했어요', '되돌리기', async () => { await PrincessDB.todos.restore(t); refreshAll(); });
+      const later = t.seriesId ? todos.filter(x => x.seriesId === t.seriesId && x.date > t.date) : [];
+      if (later.length) askDeleteSeries(t, later);
+      else deleteTodos([t]);
     }
   });
+  async function deleteTodos(list) {
+    await PrincessDB.todos.removeMany(list.map(x => x.id));
+    await refreshAll();
+    showToast(esc(list[0].title) + (list.length > 1 ? ' 외 ' + (list.length - 1) + '개' : '') + ' 삭제했어요', '되돌리기',
+      async () => { await PrincessDB.todos.restoreMany(list); refreshAll(); });
+  }
+  // 반복 할 일 × : 이것만 / 이후 것도 모두
+  const delDlg = document.getElementById('delDialog');
+  let delTarget = null;
+  function askDeleteSeries(t, later) {
+    delTarget = { t, later };
+    document.getElementById('delText').textContent = '반복되는 할 일이에요. 이후 ' + later.length + '개도 같이 삭제할까요?';
+    delDlg.showModal();
+  }
+  document.getElementById('delOne').addEventListener('click', () => { delDlg.close(); deleteTodos([delTarget.t]); });
+  document.getElementById('delAfter').addEventListener('click', () => { delDlg.close(); deleteTodos([delTarget.t, ...delTarget.later]); });
+  document.getElementById('delCancel').addEventListener('click', () => delDlg.close());
+  delDlg.addEventListener('click', e => { if (e.target === delDlg) delDlg.close(); });
 
-  // 투두 추가 팝업
+  // ---- 할 일 추가/수정 팝업 ----
+  // 추가: 내용 + 반복(안 함/매주/매달 + 끝나는 날) / 수정: 내용 + 날짜 (+ 반복이면 이것만/이후 모두)
   const dlg = document.getElementById('addDialog'), input = document.getElementById('todoInput'), okBtn = document.getElementById('dlgOk');
-  document.getElementById('addBtn').addEventListener('click', () => {
-    document.getElementById('dlgDate').textContent = krDate(selected) + '에 추가해요';
-    input.value = ''; okBtn.disabled = true;
+  const editDate = document.getElementById('editDate'), repeatEnd = document.getElementById('repeatEnd');
+  let editing = null, repeat = 'none', scope = 'one';
+  const segPick = (attr, value) => document.querySelectorAll('#addDialog [data-' + attr + ']').forEach(b => b.setAttribute('aria-checked', b.dataset[attr] === value));
+  const addMonths = (k, n) => { const d = fromIso(k), last = new Date(d.getFullYear(), d.getMonth() + n + 1, 0).getDate(); return iso(new Date(d.getFullYear(), d.getMonth() + n, Math.min(d.getDate(), last))); };
+
+  // 반복 날짜 만들기: 매주 +7일 / 매달 같은 날(없는 달은 그 달 마지막 날), 끝나는 날까지 (최대 400개)
+  function seriesDates(start, rep, end) {
+    const s = fromIso(start), e = fromIso(end), day = s.getDate(), out = [];
+    for (let i = 0; out.length < 400; i++) {
+      const d = rep === 'weekly' ? addDays(s, 7 * i)
+        : new Date(s.getFullYear(), s.getMonth() + i, Math.min(day, new Date(s.getFullYear(), s.getMonth() + i + 1, 0).getDate()));
+      if (d > e) break;
+      out.push(iso(d));
+    }
+    return out;
+  }
+  function updateRepeatUI() {
+    segPick('repeat', repeat);
+    document.getElementById('repeatEndRow').hidden = repeat === 'none';
+    const n = repeat !== 'none' && repeatEnd.value >= selected ? seriesDates(selected, repeat, repeatEnd.value).length : 0;
+    document.getElementById('repeatHint').textContent = repeat === 'none' ? '' :
+      (repeat === 'weekly' ? '매주 ' + KR_DAYS[fromIso(selected).getDay()] : '매달 ' + fromIso(selected).getDate() + '일 (없는 달은 마지막 날)') + ' · 총 ' + n + '개';
+    checkOk();
+  }
+  function checkOk() {
+    okBtn.disabled = !input.value.trim() || (editing ? !editDate.value : repeat !== 'none' && !(repeatEnd.value > selected));
+  }
+  function openTodoDialog(t) {
+    editing = t || null;
+    repeat = 'none'; scope = 'one';
+    document.getElementById('dlgTitle').textContent = editing ? 'Edit To-Do' : 'New To-Do';
+    document.getElementById('dlgDate').textContent = editing ? '내용과 날짜를 바꿀 수 있어요' : krDate(selected) + '에 추가해요';
+    input.value = editing ? editing.title : '';
+    document.getElementById('editDateRow').hidden = !editing;
+    document.getElementById('repeatRow').hidden = !!editing;
+    document.getElementById('scopeRow').hidden = !(editing && editing.seriesId);
+    segPick('scope', scope);
+    if (editing) editDate.value = editing.date;
+    else {
+      repeatEnd.min = iso(addDays(fromIso(selected), 1));
+      repeatEnd.max = iso(addDays(fromIso(selected), 365 * 3));
+      repeatEnd.value = addMonths(selected, 3);   // 기본: 3달 뒤
+      updateRepeatUI();
+    }
+    checkOk();
     dlg.showModal(); input.focus();
-  });
-  input.addEventListener('input', () => { okBtn.disabled = !input.value.trim(); });
+  }
+  document.getElementById('addBtn').addEventListener('click', () => openTodoDialog(null));
+  document.querySelectorAll('#addDialog [data-repeat]').forEach(b => b.addEventListener('click', () => { repeat = b.dataset.repeat; updateRepeatUI(); }));
+  document.querySelectorAll('#addDialog [data-scope]').forEach(b => b.addEventListener('click', () => { scope = b.dataset.scope; segPick('scope', scope); }));
+  input.addEventListener('input', checkOk);
+  editDate.addEventListener('change', checkOk);
+  repeatEnd.addEventListener('change', updateRepeatUI);
+  repeatEnd.addEventListener('input', updateRepeatUI);
   document.getElementById('dlgCancel').addEventListener('click', () => dlg.close());
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });   // 바깥 누르면 닫기
   document.getElementById('addForm').addEventListener('submit', async e => {
     e.preventDefault();
     const title = input.value.trim();
-    if (!title) return;
-    await PrincessDB.todos.add(title, selected);
-    dlg.close();
-    await refreshAll();
-    showToast(esc(title) + ' 추가했어요 ♡');
+    if (okBtn.disabled || !title) return;
+    if (editing) {
+      // 날짜는 이 할 일만, 내용은 '이후 반복도 모두'를 고르면 같은 반복의 이후 것까지
+      const targets = editing.seriesId && scope === 'after'
+        ? todos.filter(x => x.seriesId === editing.seriesId && x.date >= editing.date) : [editing];
+      for (const x of targets) await PrincessDB.todos.update(x.id, x.id === editing.id ? { title, date: editDate.value } : { title });
+      dlg.close();
+      await refreshAll();
+      showToast(targets.length > 1 ? '이후 반복 ' + targets.length + '개를 수정했어요' : '수정했어요 ・₊✧');
+      return;
+    }
+    if (repeat === 'none') {
+      await PrincessDB.todos.add(title, selected);
+      dlg.close();
+      await refreshAll();
+      showToast(esc(title) + ' 추가했어요 ・₊✧');
+    } else {
+      const dates = seriesDates(selected, repeat, repeatEnd.value);
+      await PrincessDB.todos.addSeries(title, dates, repeat);
+      dlg.close();
+      await refreshAll();
+      showToast(esc(title) + ' ' + (repeat === 'weekly' ? '매주' : '매달') + ' ' + dates.length + '개 추가했어요');
+    }
   });
 
   // ---- 완료한 일 화면: 달마다 완료한 시간 순서대로 한 줄씩 ----
@@ -769,6 +858,14 @@
   window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
   showPage(location.hash.slice(1));
   if (!profile) openProfile(true);
+
+  // ---- 자정을 넘기면 날짜·멘트·하트·달력을 새로 (쓰던 일기나 열린 팝업이 있으면 끝난 뒤에) ----
+  function checkNewDay() {
+    if (iso(new Date()) === todayIso || diaryDirty() || document.querySelector('dialog[open]')) return;
+    location.reload();
+  }
+  setInterval(checkNewDay, 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkNewDay(); });
 
   // ---- 픽셀 캐릭터: 토끼(꼬물꼬물) / 네잎클로버(흔들흔들) + 하트 ----
   (function () {

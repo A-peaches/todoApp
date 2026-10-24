@@ -137,9 +137,49 @@
     <div class="title-en" id="dlgTitle">New To-Do</div>
     <div class="dlg-date" id="dlgDate"></div>
     <input type="text" id="todoInput" maxlength="40" placeholder="예: 도서관 책 반납하기" autocomplete="off" aria-label="할 일">
+    <!-- 수정할 때만: 날짜 -->
+    <div class="dlg-field" id="editDateRow" hidden>
+      <label class="pf-label" for="editDate">날짜</label>
+      <input type="date" id="editDate">
+    </div>
+    <!-- 추가할 때만: 반복 -->
+    <div class="dlg-field" id="repeatRow">
+      <div class="pf-label">반복</div>
+      <div class="seg" role="radiogroup" aria-label="반복">
+        <button type="button" role="radio" data-repeat="none" aria-checked="true">안 함</button>
+        <button type="button" role="radio" data-repeat="weekly" aria-checked="false">매주</button>
+        <button type="button" role="radio" data-repeat="monthly" aria-checked="false">매달</button>
+      </div>
+      <div id="repeatEndRow" hidden>
+        <label class="pf-label" for="repeatEnd">끝나는 날</label>
+        <input type="date" id="repeatEnd">
+        <div class="dlg-hint" id="repeatHint"></div>
+      </div>
+    </div>
+    <!-- 반복 할 일을 수정할 때만: 적용 범위 -->
+    <div class="dlg-field" id="scopeRow" hidden>
+      <div class="pf-label">어디까지 바꿀까요?</div>
+      <div class="seg" role="radiogroup" aria-label="수정 범위">
+        <button type="button" role="radio" data-scope="one" aria-checked="true">이것만</button>
+        <button type="button" role="radio" data-scope="after" aria-checked="false">이후 반복도 모두</button>
+      </div>
+    </div>
     <div class="dlg-actions">
       <button type="button" class="cancel" id="dlgCancel">취소</button>
       <button type="submit" class="ok" id="dlgOk" disabled>확인</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="add-dialog" id="delDialog" aria-labelledby="delTitle">
+  <form method="dialog">
+    <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 1 L12.6 5.4 L17 7 L12.6 8.6 L11 13 L9.4 8.6 L5 7 L9.4 5.4Z" fill="#fff"/></svg></div>
+    <div class="title-en" id="delTitle">Delete</div>
+    <div class="dlg-date" id="delText">반복되는 할 일이에요. 이후 것도 삭제할까요?</div>
+    <div class="dlg-col">
+      <button type="button" class="ok" id="delOne">이 할 일만 삭제</button>
+      <button type="button" class="ok" id="delAfter">이후 반복도 모두 삭제</button>
+      <button type="button" class="cancel" id="delCancel">취소</button>
     </div>
   </form>
 </dialog>
