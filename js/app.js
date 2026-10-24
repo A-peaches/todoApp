@@ -627,6 +627,9 @@
     document.querySelectorAll('.char-opt[data-char]').forEach(b => b.setAttribute('aria-checked', b.dataset.char === character));
     document.querySelectorAll('.swatch').forEach(b => b.setAttribute('aria-checked', b.dataset.theme === prefs.theme));
     updateFavicon();
+    // 상태바(주소창) 색도 테마 배경색으로
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = getComputedStyle(document.documentElement).getPropertyValue('--blush').trim() || '#fbe9f1';
     renderBell();
     scheduleNotify();
   }
@@ -1072,6 +1075,12 @@
 
   applyTheme();
   refreshPush();
+  // 준비 끝 → 로딩 화면 걷기
+  requestAnimationFrame(() => {
+    const sp = document.getElementById('splash');
+    sp.classList.add('hide');
+    setTimeout(() => sp.remove(), 400);
+  });
   document.fonts && document.fonts.ready.then(updateFavicon);   // 글꼴이 늦게 오면 아이콘 다시
 
   // ---- 눈 내리는 배경 ----

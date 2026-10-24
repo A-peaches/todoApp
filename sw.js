@@ -6,9 +6,10 @@ importScripts('notify.js');
 
 // ---- 오프라인: 앱 파일과 라이브러리를 폰에 저장해 두고, 인터넷이 없으면 저장본으로 열기 ----
 // 앱 파일은 '인터넷 먼저'(새 버전 바로 반영), 라이브러리·글꼴은 '저장본 먼저'(버전 고정이라 안 바뀜)
-const CACHE = 'todo-offline-v10';
+const CACHE = 'todo-offline-v11';
 const APP_FILES = ['./princess-todo.html', './css/app.css', './js/app.js', './db.js', './notify.js',
-  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/badge-96.png'];
+  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/badge-96.png',
+  './icons/icon-maskable-192.png', './icons/icon-maskable-512.png', './icons/splash-192.png', './icons/splash-512.png'];
 const LIBS = ['https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js',
   'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'];
 const STATIC_HOSTS = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
