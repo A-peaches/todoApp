@@ -43,7 +43,7 @@ body {
 #snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
 .app {
   position: relative; z-index: 1;
-  max-width: 480px; margin: 0 auto;
+  max-width: 430px; margin: 0 auto;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 8px calc(100px + env(safe-area-inset-bottom, 0px));
@@ -278,7 +278,7 @@ body {
   padding-left: max(8px, env(safe-area-inset-left, 0px));
   padding-right: max(8px, env(safe-area-inset-right, 0px));
 }
-.nav ul { list-style: none; margin: 0 auto; padding: 0; max-width: 480px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.nav ul { list-style: none; margin: 0 auto; padding: 0; max-width: 430px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
 .nav button {
   width: 100%; border: 0; background: none; cursor: pointer; color: var(--muted);
   font-family: var(--f-body); font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 2px 0;
@@ -300,8 +300,23 @@ body {
 /* ===== 한 화면 레이아웃: 페이지는 스크롤 없이 화면 높이에 맞추고, 목록·일기만 안에서 스크롤 =====
    기준: iPhone 15/16 (393×852), 홈 화면 앱으로 열면 상단 상태바·하단 홈 막대(safe-area)를 빼고 계산 */
 body { margin: 0; }
+:root { --app-h: 100vh; --app-h: 100dvh; }   /* 폰: 화면 높이 그대로 */
+#phone { position: relative; }
+/* 컴퓨터처럼 넓고 높은 화면: 가운데에 폰 크기(393×852) 틀로 보여주기.
+   틀에 transform을 주면 안쪽의 fixed 요소(탭바·눈·알림)가 화면이 아니라 틀 기준으로 붙어요 */
+@media (min-width: 600px) and (min-height: 700px) {
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; }
+  #phone {
+    --app-h: 100%;
+    width: 393px; height: min(852px, calc(100dvh - 48px)); flex: none;
+    overflow: hidden; transform: translateZ(0); border-radius: 44px;
+    background: linear-gradient(180deg, var(--blush) 0%, var(--sky) 38%, var(--lilac) 75%, var(--blush) 100%);
+    box-shadow: 0 0 0 10px #fff, 0 0 0 11px var(--rose-soft), 0 30px 60px rgba(110,70,120,.25);
+  }
+  #phone > .app { min-height: 0; }
+}
 .app {
-  height: 100vh; height: 100dvh; box-sizing: border-box; overflow: hidden; gap: 12px;
+  height: var(--app-h); min-height: 640px; box-sizing: border-box; overflow: hidden; gap: 12px;   /* 640px보다 낮은 화면은 찌그러뜨리지 않고 페이지를 스크롤 */
   padding-top: calc(6px + env(safe-area-inset-top, 0px));
   padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px));   /* 하단 탭바 높이만큼 */
 }
@@ -361,13 +376,15 @@ body { margin: 0; }
 
 @media (max-width: 360px) {
   .date { font-size: 26px; }
-  .top { grid-template-columns: 1fr; }
+  .top { gap: 10px; }
+  .week { padding-left: 10px; padding-right: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sparkle, .big-heart.pop svg { animation: none; }
 }
 </style>
 
+<div id="phone">
 <canvas id="snow" aria-hidden="true"></canvas>
 
 <div class="app page" id="page-home">
@@ -582,6 +599,8 @@ body { margin: 0; }
   </ul>
 </nav>
 <div class="toast" id="toast" hidden></div>
+
+</div><!-- /#phone -->
 
 <script src="https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
@@ -1221,7 +1240,7 @@ body { margin: 0; }
   let W, H, flakes = [];
   function resize() {
     const r = window.devicePixelRatio || 1;
-    W = window.innerWidth; H = window.innerHeight;
+    W = cv.clientWidth || window.innerWidth; H = cv.clientHeight || window.innerHeight;   // 폰 틀 안에서는 틀 크기
     cv.width = W * r; cv.height = H * r; ctx.setTransform(r, 0, 0, r, 0, 0);
   }
   resize(); window.addEventListener('resize', resize);
