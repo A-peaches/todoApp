@@ -1,7 +1,7 @@
 // 공주 투두 푸시 서버 (Cloudflare Workers)
 // - POST /subscribe   { subscription, lat, lon, tz }  구독 저장 (KV)
 // - POST /unsubscribe { endpoint }                    구독 삭제
-// - POST /test        { endpoint, slot }              저장된 구독에 바로 한 번 보내기 (확인용)
+// - POST /test        { endpoint, slot? }             저장된 구독에 바로 한 번 보내기 (slot 없으면 연결 확인 알림)
 // - 매시 정각(cron): 구독자 현지 시각이 7·12·18·21·23시면 { slot, weather }를 보냄
 //   문구(이름·남은 할 일 포함)는 폰의 서비스 워커가 notify.js로 완성해요.
 import { buildPushPayload } from '@block65/webcrypto-web-push';
@@ -100,9 +100,11 @@ export default {
       if (typeof body.endpoint !== 'string') return json({ error: 'bad endpoint' }, 400, origin);
       const rec = await env.SUBS.get(await keyOf(body.endpoint), 'json');
       if (!rec) return json({ error: 'not subscribed' }, 404, origin);
-      const slot = SLOTS.includes(body.slot) ? body.slot : 7;
+      // slot 없이 부르면 '연결됐어요' 확인 알림, slot을 주면 그 시간 알림을 미리 보기
+      const slot = SLOTS.includes(body.slot) ? body.slot : null;
       const weather = slot === 7 || slot === 21 ? await weatherFor(rec.lat, rec.lon, rec.tz) : null;
-      const res = await send(env, rec, { slot, weather });
+      const data = slot ? { slot, weather } : { tag: 'todo-on', body: '푸시 알림이 연결됐어요 ・₊✧ 매일 7시·12시·18시·21시·23시에 찾아올게요' };
+      const res = await send(env, rec, data);
       return json({ ok: res.ok, status: res.status }, 200, origin);
     }
     return json({ error: 'not found' }, 404, origin);

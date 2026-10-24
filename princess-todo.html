@@ -1361,7 +1361,10 @@ body { margin: 0; }
     await setPref('notify', true);
     await refreshPush();
     showToast(pushActive ? '알림을 켰어요 ・₊✧ 앱을 닫아도 찾아올게요' : '알림을 켰어요 ・₊✧ (앱이 열려 있을 때만 와요)');
-    sendNotification('알림을 켰어요 ・₊✧ 매일 7시·12시·18시·21시·23시에 찾아올게요', 'todo-on');
+    if (pushActive) {   // 확인 알림을 푸시 서버를 거쳐 보내서 연결까지 확인
+      const sub = await swReg.pushManager.getSubscription();
+      fetch(PUSH.server + '/test', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {});
+    } else sendNotification('알림을 켰어요 ・₊✧ 매일 7시·12시·18시·21시·23시에 찾아올게요', 'todo-on');
   });
 
   // ---- 사이트 아이콘: 투명 배경에 TO / DO, 고른 테마 색으로 ----
