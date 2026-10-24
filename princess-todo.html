@@ -290,6 +290,18 @@
   </section>
 </div>
 
+<dialog class="add-dialog" id="permDialog" aria-labelledby="permTitle">
+  <form method="dialog">
+    <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 1 L12.6 5.4 L17 7 L12.6 8.6 L11 13 L9.4 8.6 L5 7 L9.4 5.4Z" fill="#fff"/></svg></div>
+    <div class="title-en" id="permTitle">Almost Done</div>
+    <div class="dlg-date perm-text" id="permText">우리 동네 날씨를 보여드리고, 하루 다섯 번 응원 알림을 보내드릴게요.<br>다음 화면에서 <b>위치</b>와 <b>알림</b>을 허용해 주세요 ・₊✧</div>
+    <div class="dlg-col">
+      <button type="button" class="ok" id="permAllow">허용하기</button>
+      <button type="button" class="cancel" id="permLater">나중에 할게요</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog class="add-dialog" id="profileDialog" aria-labelledby="pfTitle">
   <form method="dialog" id="profileForm">
     <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 13 C3 8 2 4 4.5 2 C7 0 10 2 11 4 C12 2 15 0 17.5 2 C20 4 19 8 11 13Z" fill="#fff"/></svg></div>

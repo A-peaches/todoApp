@@ -13,6 +13,8 @@
 
   // ---- 로컬 DB (db.js) ----
   await PrincessDB.init();
+  // 처음 켤 때 위치·알림을 한 번에 안내하기 전까지는 위치를 묻지 않음
+  let permAsked = !!(await PrincessDB.cache.get('perm-asked'));
   let todos = await PrincessDB.todos.all();
 
   // ---- 헤더 ----
@@ -236,7 +238,7 @@
   // 사용자 위치. 위치 권한이 없거나 막히면 서울 기준으로 (날씨가 비어 보이지 않게)
   const SEOUL = { coords: { latitude: 37.5665, longitude: 126.978 }, fallback: true };
   const getPosition = () => new Promise(ok => {
-    if (!navigator.geolocation) { ok(SEOUL); return; }
+    if (!navigator.geolocation || !permAsked) { ok(SEOUL); return; }
     navigator.geolocation.getCurrentPosition(ok, () => ok(SEOUL), { timeout: 10000, maximumAge: 30 * 60 * 1000 });
   });
   // 오늘·내일 날씨 받기: 기온, 날씨 코드, 강수확률, 평균 습도 (알림 멘트에도 씀)
@@ -890,7 +892,39 @@
     pfDlg.close();
     renderCheer(); renderSettings();
     showToast(onboarding ? '반가워요, ' + esc(profile.name) + '님 ・₊✧' : '프로필을 바꿨어요');
+    if (onboarding) maybeAskPermissions();
   });
+
+  // ---- 처음 한 번: 위치·알림 허용 안내 → '허용하기'를 누르면 알림 → 위치 순서로 브라우저가 물어봄 ----
+  const permDlg = document.getElementById('permDialog');
+  const canNotify = 'Notification' in window;
+  async function maybeAskPermissions() {
+    if (permAsked) return;
+    let geoState = 'prompt';
+    try { geoState = (await navigator.permissions.query({ name: 'geolocation' })).state; } catch (e) {}
+    const notifState = canNotify ? Notification.permission : 'unsupported';
+    if (geoState !== 'prompt' && notifState !== 'default') { await markAsked(); return; }   // 이미 정한 경우
+    if (!canNotify) document.getElementById('permText').innerHTML =
+      '우리 동네 날씨를 보여드릴게요. 다음 화면에서 <b>위치</b>를 허용해 주세요 ・₊✧<br><small>아이폰 알림은 홈 화면에 추가한 앱에서 설정의 종으로 켤 수 있어요</small>';
+    permDlg.showModal();
+  }
+  async function markAsked() { permAsked = true; await PrincessDB.cache.set('perm-asked', true); }
+  document.getElementById('permAllow').addEventListener('click', async () => {
+    // 알림 권한 요청은 버튼을 누른 그 순간에 바로 (브라우저 규칙)
+    const notifReq = canNotify && Notification.permission === 'default' ? Notification.requestPermission() : Promise.resolve(canNotify ? Notification.permission : 'unsupported');
+    permDlg.close();
+    await markAsked();
+    const perm = await notifReq;
+    if (perm === 'granted') { await setPref('notify', true); await refreshPush(); }
+    // 위치: 허용하면 그 위치 날씨로 바로 바꿈
+    try { paintWeather(await fetchWeather()); } catch (e) {}
+    showToast(perm === 'granted' ? '알림을 켰어요 ・₊✧ 매일 7·12·18·21·23시에 찾아올게요' : '설정의 종으로 언제든 알림을 켤 수 있어요');
+  });
+  document.getElementById('permLater').addEventListener('click', async () => {
+    permDlg.close(); await markAsked();
+    showToast('설정에서 언제든 켤 수 있어요');
+  });
+  permDlg.addEventListener('cancel', e => e.preventDefault());
   document.getElementById('profileEdit').addEventListener('click', () => openProfile(false));
 
   // 설정 화면: 프로필 사진은 메인 화면의 토끼를 그대로 비춰서 보여줌
@@ -931,6 +965,7 @@
   window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
   showPage(location.hash.slice(1));
   if (!profile) openProfile(true);
+  else maybeAskPermissions();
 
   // ---- 자정을 넘기면 날짜·멘트·하트·달력을 새로 (쓰던 일기나 열린 팝업이 있으면 끝난 뒤에) ----
   function checkNewDay() {
@@ -1110,4 +1145,11 @@
     if (!still) requestAnimationFrame(draw);
   }
   draw();
-})();
+  try { sessionStorage.removeItem('todo-recover'); } catch (e) {}   // 정상으로 다 떴으면 복구 표시 지움
+})().catch(err => {
+  // 업데이트 직후 화면 파일과 코드 파일 버전이 잠깐 엇갈리면 시작이 멈출 수 있어서, 한 번만 자동으로 새로 열기
+  console.error(err);
+  try {
+    if (!sessionStorage.getItem('todo-recover')) { sessionStorage.setItem('todo-recover', '1'); location.reload(); }
+  } catch (e) {}
+});
