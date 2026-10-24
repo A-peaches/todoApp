@@ -56,7 +56,7 @@
     setTimeout(() => li.classList.add('leaving'), 250);
     setTimeout(() => {
       setDone(id, true);
-      showToast(esc(title) + ' 완료! ♡', '되돌리기', () => setDone(id, false));
+      showToast(esc(title) + ' 완료! ・₊✧', '되돌리기', () => setDone(id, false));
     }, 600);
   }
   weekList.addEventListener('click', e => { const li = e.target.closest('li[data-id]'); if (li) complete(li); });
