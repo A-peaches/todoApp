@@ -148,6 +148,11 @@ body {
 .todo-list li .t { overflow-wrap: anywhere; font-size: 12.5px; }
 .todo-list li .d { font-family: var(--f-en); font-weight: 600; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .todo-list li svg { width: 13px; height: 12px; }
+.ico { display: grid; place-items: center; }
+.ico-clover { display: none; }
+:root[data-char="clover"] .ico-heart { display: none; }
+:root[data-char="clover"] .ico-clover { display: block; }
+.f-clover { fill: #7cc47f; }
 .todo-list li.today { background: linear-gradient(90deg, var(--rose-soft), rgba(241,220,158,.5)); }
 .todo-list li.today .d { color: var(--rose); font-family: var(--f-body); font-size: 10.5px; font-weight: 700; }
 .todo-list li[data-id] { cursor: pointer; transition: opacity .35s ease, transform .35s ease; -webkit-tap-highlight-color: transparent; }
@@ -171,7 +176,9 @@ body {
 
 /* 날씨 + 하트 */
 .mid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: stretch; }
-.weather { padding: 14px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.weather { padding: 14px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: transform .15s ease; }
+.weather:active { transform: scale(.97); }
+.weather:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 .weather .title-en { font-size: 16.5px; }
 .wx-ico { height: 40px; display: grid; place-items: center; }
 .weather svg { width: 44px; height: 38px; margin-top: 2px; }
@@ -334,7 +341,8 @@ body {
 .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
 .swatch { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 7px 0 6px; font-size: 11px; font-weight: 400; }
 .swatch i { width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.12), inset 0 0 0 3px rgba(255,255,255,.55); }
-.backup-card .opt-label { line-height: 1.5; }
+.backup-card .opt-label, .sound-card .opt-label { line-height: 1.5; }
+a.char-opt { display: block; text-align: center; text-decoration: none; }
 #backupInfo:empty { display: none; }
 .bg-opt { display: flex; align-items: center; justify-content: center; gap: 6px; }
 .bg-thumb { width: 20px; height: 20px; border-radius: 6px; background: center / cover no-repeat; box-shadow: 0 0 0 1px var(--rose-soft); }

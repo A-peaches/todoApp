@@ -21,7 +21,8 @@
 
   // ---- 이번 주 할 일 ----
   const weekEnd = iso(addDays(now, 6));
-  const heart = '<svg viewBox="0 0 20 18" aria-hidden="true"><path d="M10 17 C2 11 1 6 4 3 C6.5 .8 9 2.4 10 4.5 C11 2.4 13.5 .8 16 3 C19 6 18 11 10 17Z" class="f-heart"/></svg>';
+  // 목록 앞 아이콘: 캐릭터가 토끼면 하트, 클로버면 네잎클로버 (CSS가 하나만 보여줌)
+  const heart = '<span class="ico"><svg class="ico-heart" viewBox="0 0 20 18" aria-hidden="true"><path d="M10 17 C2 11 1 6 4 3 C6.5 .8 9 2.4 10 4.5 C11 2.4 13.5 .8 16 3 C19 6 18 11 10 17Z" class="f-heart"/></svg><svg class="ico-clover" viewBox="0 0 20 20" aria-hidden="true"><path class="f-clover" d="M2.6 6.4a3.9 3.9 0 1 0 7.8 0a3.9 3.9 0 1 0 -7.8 0Z M9.6 6.4a3.9 3.9 0 1 0 7.8 0a3.9 3.9 0 1 0 -7.8 0Z M2.6 13.6a3.9 3.9 0 1 0 7.8 0a3.9 3.9 0 1 0 -7.8 0Z M9.6 13.6a3.9 3.9 0 1 0 7.8 0a3.9 3.9 0 1 0 -7.8 0Z"/></svg></span>';
   const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   // 토스트 (버튼 하나 선택)
   const toast = document.getElementById('toast');
@@ -252,6 +253,12 @@
     catch (e) { if (!usable) weatherMessage('날씨를 못 불러왔어요'); }
   }
   loadWeather();
+  // 날씨 카드를 누르면 구글 날씨 검색 (설치한 앱에서는 브라우저로 열림)
+  document.querySelectorAll('.weather[data-q]').forEach(card => {
+    const open = () => window.open('https://www.google.com/search?q=' + encodeURIComponent(card.dataset.q), '_blank', 'noopener');
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  });
 
   // ---- 하트 / 탭바 ----
   const bh = document.getElementById('bigHeart');
@@ -704,6 +711,7 @@
     } catch (e) { showToast('불러오지 못했어요: ' + (e.message || '알 수 없는 오류')); }
   });
   showBackupInfo();
+  document.getElementById('soundPreview').addEventListener('click', boing);
 
   // ---- 알림: 7시 날씨 / 12시 점심 / 18시 하루 마무리 / 21시 내일 날씨 / 23시 굿나잇 ----
   // 1) 푸시 서버(push-server/, Cloudflare Workers)가 정각마다 보내면 앱을 닫아도 와요.
@@ -721,6 +729,8 @@
     return TodoNotify.buildMessage(hour, { name: profile && profile.name, weather, left });
   }
   let swReg = null, pushActive = false;
+  // 푸시가 왔을 때 앱을 보고 있으면 서비스 워커가 알려줌 → 뿅
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'boing') boing(); });
   const swReady = 'serviceWorker' in navigator
     ? navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => (swReg = r)).catch(() => null) : Promise.resolve(null);
   // 새 버전 서비스 워커가 자리를 잡으면 한 번 새로고침해서 새 화면을 바로 보여줌 (처음 설치 때는 제외)
@@ -733,7 +743,9 @@
   }
   async function sendNotification(body, tag) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    const opts = { body, tag, icon: 'icons/icon-192.png', badge: 'icons/badge-96.png' };   // 배지는 상단바용 흰 TO/DO
+    const visible = document.visibilityState === 'visible';
+    if (visible) boing();   // 앱을 보고 있으면 시스템 소리 대신 뿅
+    const opts = { body, tag, icon: 'icons/icon-192.png', badge: 'icons/badge-96.png', silent: visible };   // 배지는 상단바용 흰 TO/DO
     try { if (swReg) { await swReg.showNotification('₊‧Todo‧₊', opts); return; } } catch (e) {}
     try { new Notification('₊‧Todo‧₊', opts); } catch (e) {}
   }
