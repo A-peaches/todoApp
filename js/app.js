@@ -723,7 +723,6 @@
     } catch (e) { showToast('불러오지 못했어요: ' + (e.message || '알 수 없는 오류')); }
   });
   showBackupInfo();
-  document.getElementById('soundPreview').addEventListener('click', boing);
 
   // ---- 알림: 7시 날씨 / 12시 점심 / 18시 하루 마무리 / 21시 내일 날씨 / 23시 굿나잇 ----
   // 1) 푸시 서버(push-server/, Cloudflare Workers)가 정각마다 보내면 앱을 닫아도 와요.
@@ -741,8 +740,6 @@
     return TodoNotify.buildMessage(hour, { name: profile && profile.name, weather, left });
   }
   let swReg = null, pushActive = false;
-  // 푸시가 왔을 때 앱을 보고 있으면 서비스 워커가 알려줌 → 뿅
-  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'boing') boing(); });
   const swReady = 'serviceWorker' in navigator
     ? navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => (swReg = r)).catch(() => null) : Promise.resolve(null);
   // 새 버전 서비스 워커가 자리를 잡으면 한 번 새로고침해서 새 화면을 바로 보여줌 (처음 설치 때는 제외)
@@ -755,9 +752,7 @@
   }
   async function sendNotification(body, tag) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    const visible = document.visibilityState === 'visible';
-    if (visible) boing();   // 앱을 보고 있으면 시스템 소리 대신 뿅
-    const opts = { body, tag, icon: 'icons/icon-192.png', badge: 'icons/badge-96.png', silent: visible };   // 배지는 상단바용 흰 TO/DO
+    const opts = { body, tag, icon: 'icons/icon-192.png', badge: 'icons/badge-96.png' };   // 배지는 상단바용 흰 TO/DO
     try { if (swReg) { await swReg.showNotification('₊‧Todo‧₊', opts); return; } } catch (e) {}
     try { new Notification('₊‧Todo‧₊', opts); } catch (e) {}
   }

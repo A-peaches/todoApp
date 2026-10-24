@@ -6,9 +6,9 @@ importScripts('notify.js');
 
 // ---- 오프라인: 앱 파일과 라이브러리를 폰에 저장해 두고, 인터넷이 없으면 저장본으로 열기 ----
 // 앱 파일은 '인터넷 먼저'(새 버전 바로 반영), 라이브러리·글꼴은 '저장본 먼저'(버전 고정이라 안 바뀜)
-const CACHE = 'todo-offline-v9';
+const CACHE = 'todo-offline-v10';
 const APP_FILES = ['./princess-todo.html', './css/app.css', './js/app.js', './db.js', './notify.js',
-  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/badge-96.png', './sounds/boing.wav'];
+  './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/badge-96.png'];
 const LIBS = ['https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js',
   'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'];
 const STATIC_HOSTS = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
@@ -81,12 +81,8 @@ self.addEventListener('push', e => {
       const left = (local.todos || []).filter(t => t.date === today && !t.done).length;
       body = self.TodoNotify.buildMessage(d.slot, { name: local.profile && local.profile.name, weather: d.weather, left });
     }
-    // 앱을 보고 있는 중이면 시스템 소리는 끄고 앱에서 '뿅' (웹 알림은 소리 파일을 직접 정할 수 없어서)
-    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    const seen = wins.find(c => c.visibilityState === 'visible');
-    if (seen) seen.postMessage({ type: 'boing' });
     await self.registration.showNotification(d.title || '₊‧Todo‧₊', {
-      body: body || '', tag: d.slot ? 'todo-' + d.slot : d.tag, icon: 'icons/icon-192.png', silent: !!seen,
+      body: body || '', tag: d.slot ? 'todo-' + d.slot : d.tag, icon: 'icons/icon-192.png',
       badge: 'icons/badge-96.png'   // 안드로이드 상단바: 투명 배경 흰 TO/DO (꽉 찬 아이콘은 흰 네모로 보임)
     });
   })());
