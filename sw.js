@@ -6,7 +6,7 @@ importScripts('notify.js');
 
 // ---- 오프라인: 앱 파일과 라이브러리를 폰에 저장해 두고, 인터넷이 없으면 저장본으로 열기 ----
 // 앱 파일은 '인터넷 먼저'(새 버전 바로 반영), 라이브러리·글꼴은 '저장본 먼저'(버전 고정이라 안 바뀜)
-const CACHE = 'todo-offline-v5';
+const CACHE = 'todo-offline-v6';
 const APP_FILES = ['./princess-todo.html', './css/app.css', './js/app.js', './db.js', './notify.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/badge-96.png'];
 const LIBS = ['https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js',
@@ -25,7 +25,8 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin === self.location.origin) {
-    e.respondWith(fetch(req).then(res => {
+    // cache: 'no-cache' → 브라우저의 10분 캐시를 건너뛰고 서버에 바뀌었는지 물어봄 (안 바뀌었으면 304로 가볍게)
+    e.respondWith(fetch(req, { cache: 'no-cache' }).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
       return res;
     }).catch(async () => (await caches.match(req, { ignoreSearch: true })) ||

@@ -722,7 +722,15 @@
   }
   let swReg = null, pushActive = false;
   const swReady = 'serviceWorker' in navigator
-    ? navigator.serviceWorker.register('sw.js').then(r => (swReg = r)).catch(() => null) : Promise.resolve(null);
+    ? navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => (swReg = r)).catch(() => null) : Promise.resolve(null);
+  // 새 버전 서비스 워커가 자리를 잡으면 한 번 새로고침해서 새 화면을 바로 보여줌 (처음 설치 때는 제외)
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloaded || diaryDirty() || document.querySelector('dialog[open]')) return;
+      reloaded = true; location.reload();
+    });
+  }
   async function sendNotification(body, tag) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
     const opts = { body, tag, icon: 'icons/icon-192.png', badge: 'icons/badge-96.png' };   // 배지는 상단바용 흰 TO/DO
