@@ -43,6 +43,8 @@
 html, body { height: 100%; }
 /* 폰에서 누를 때 생기는 파란(회색) 네모 하이라이트 없애기. 키보드 이동 때 테두리(:focus-visible)는 그대로 */
 * { -webkit-tap-highlight-color: transparent; }
+/* 빠르게 두 번 눌러도 확대되지 않게 (두 손가락 확대는 그대로) */
+html, body, button, a, [role="button"], [role="link"], .pcal td { touch-action: manipulation; }
 body {
   background: linear-gradient(180deg, var(--blush) 0%, var(--sky) 38%, var(--lilac) 75%, var(--blush) 100%) fixed;
   color: var(--ink);
@@ -299,7 +301,7 @@ body {
 .add-dialog .dlg-date { font-family: var(--f-kr-display); font-size: 13px; color: var(--muted); margin-top: 6px; }
 .add-dialog input {
   width: 100%; box-sizing: border-box; margin-top: 14px; padding: 12px 14px; border-radius: 14px;
-  border: 1px solid var(--rose-soft); background: var(--surface); font: 15px var(--f-body); color: var(--ink); outline: none;
+  border: 1px solid var(--rose-soft); background: var(--surface); font: 16px var(--f-body); color: var(--ink); outline: none;   /* 16px 미만이면 아이폰이 입력할 때 화면을 확대함 */
 }
 .add-dialog input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(var(--rose-rgb),.15); }
 .dlg-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
@@ -316,7 +318,7 @@ body {
 .diary-text {
   flex: 1; width: 100%; box-sizing: border-box; min-height: 0; margin-top: 12px; resize: none;
   border: 0; outline: none; padding: 4px 6px; border-radius: 0;
-  font: 14px/28px var(--f-kr-display); color: var(--ink); text-align: left;
+  font: 16px/28px var(--f-kr-display); color: var(--ink); text-align: left;   /* 16px: 아이폰 입력 확대 방지 */
   background: repeating-linear-gradient(180deg, transparent 0 27px, rgba(var(--rose-rgb),.16) 27px 28px);
   background-attachment: local;
 }
