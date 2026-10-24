@@ -63,9 +63,9 @@
       set: (name, birth) => db.settings.put({ key: 'profile', name, birth })
     },
 
-    prefs: {   // 테마: { theme: 'pink' | 'black' | 'blue' | 'yellow' | 'green' | 'white', character: 'bunny' | 'clover' }
+    prefs: {   // 테마·알림: { theme: 'pink' | 'black' | 'blue' | 'yellow' | 'green' | 'white', character: 'bunny' | 'clover', notify }
       async get() { const p = await db.settings.get('prefs'); if (!p) return {}; const { key, ...rest } = p; return rest; },
-      set: prefs => db.settings.put({ key: 'prefs', theme: prefs.theme, character: prefs.character })
+      set: prefs => db.settings.put({ key: 'prefs', theme: prefs.theme, character: prefs.character, notify: !!prefs.notify })
     },
 
     cache: {

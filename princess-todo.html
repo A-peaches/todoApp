@@ -339,6 +339,16 @@ body {
 #page-settings .profile-card { padding-top: 32px; padding-bottom: 14px; gap: 4px; }
 #page-settings .avatar { width: 92px; height: 92px; margin-top: 8px; }
 #page-settings .avatar canvas { width: 80px; height: 75px; }
+.profile-card { position: relative; }
+.bell {
+  position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; border: 0; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center; color: var(--muted); background: var(--tile); box-shadow: inset 0 0 0 1px var(--rose-soft);
+}
+.bell svg { width: 20px; height: 20px; }
+.bell.on { color: var(--gold); background: var(--surface); box-shadow: 0 0 0 1px var(--gold-hi), 0 4px 10px rgba(var(--rose-rgb),.18); }
+.bell.on .bell-body { fill: var(--gold-hi); }
+.bell.on .bell-off { display: none; }
+.bell:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .pf-label { display: block; text-align: left; font-size: 12px; color: var(--muted); margin: 14px 2px -8px; }
 .add-dialog.onboarding .dlg-actions { grid-template-columns: 1fr; }
 .add-dialog.onboarding .cancel { display: none; }
@@ -655,6 +665,11 @@ body { margin: 0; }
   <section class="card profile-card">
     <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 7 C6 0 1 1 1 5 C1 9 6 9 11 7Z M11 7 C16 0 21 1 21 5 C21 9 16 9 11 7Z" fill="#fff"/><circle cx="11" cy="7" r="2.2" fill="#f1dc9e"/></svg></div>
     <div class="title-en">Profile</div>
+    <button type="button" class="bell" id="bellBtn" aria-pressed="false" aria-label="알림 꺼짐, 누르면 켜요">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path class="bell-body" d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/><path class="bell-off" d="M4 4l16 16"/>
+      </svg>
+    </button>
     <div class="avatar" role="img" aria-label="프로필 사진: 토끼"><canvas id="avatar" width="128" height="120" aria-hidden="true"></canvas></div>
     <div class="profile-name" id="profileName"></div>
     <div class="profile-birth" id="profileBirth"></div>
@@ -934,24 +949,28 @@ body { margin: 0; }
       card.querySelector('.wx-label').textContent = msg;
     });
   }
+  // 사용자 위치 (브라우저 위치 권한 필요)
+  const getPosition = () => new Promise((ok, fail) => navigator.geolocation
+    ? navigator.geolocation.getCurrentPosition(ok, fail, { timeout: 10000, maximumAge: 30 * 60 * 1000 })
+    : fail(new Error('위치를 쓸 수 없어요')));
+  // 오늘·내일 날씨 받기: 기온, 날씨 코드, 강수확률, 평균 습도 (알림 멘트에도 씀)
+  async function fetchWeather() {
+    const { latitude, longitude } = (await getPosition()).coords;
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + latitude.toFixed(3) + '&longitude=' + longitude.toFixed(3) +
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,relative_humidity_2m_mean&timezone=auto&forecast_days=2';
+    const d = (await (await fetch(url)).json()).daily;
+    const w = { date: iso(new Date()), code: d.weather_code, max: d.temperature_2m_max, min: d.temperature_2m_min,
+      rain: d.precipitation_probability_max, hum: d.relative_humidity_2m_mean };
+    await PrincessDB.cache.set('weather', w);
+    return w;
+  }
   async function loadWeather() {
     const cached = await PrincessDB.cache.get('weather');
     const usable = cached && cached.value.date === todayIso;
     if (usable) paintWeather(cached.value);
-    if (usable && Date.now() - cached.savedAt < 60 * 60 * 1000) return;   // 1시간 안에 받은 건 그대로 사용
-    if (!navigator.geolocation) { if (!usable) weatherMessage('위치를 쓸 수 없어요'); return; }
-    navigator.geolocation.getCurrentPosition(async pos => {
-      try {
-        const { latitude, longitude } = pos.coords;
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + latitude.toFixed(3) + '&longitude=' + longitude.toFixed(3) +
-          '&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=2';
-        const d = (await (await fetch(url)).json()).daily;
-        const w = { date: todayIso, code: d.weather_code, max: d.temperature_2m_max, min: d.temperature_2m_min };
-        await PrincessDB.cache.set('weather', w);
-        paintWeather(w);
-      } catch (e) { if (!usable) weatherMessage('날씨를 못 불러왔어요'); }
-    }, () => { if (!usable) weatherMessage('위치를 허용하면 보여요'); },
-    { timeout: 10000, maximumAge: 30 * 60 * 1000 });
+    if (usable && cached.value.hum && Date.now() - cached.savedAt < 60 * 60 * 1000) return;   // 1시간 안에 받은 건 그대로 사용
+    try { paintWeather(await fetchWeather()); }
+    catch (e) { if (!usable) weatherMessage(e && e.code === 1 ? '위치를 허용하면 보여요' : '날씨를 못 불러왔어요'); }
   }
   loadWeather();
 
@@ -961,7 +980,26 @@ body { margin: 0; }
   const heartCount = document.getElementById('heartCount');
   function showHearts(n) { heartCount.textContent = n; bh.setAttribute('aria-label', (character === 'clover' ? '클로버' : '하트') + ' 누르기, 오늘 ' + n + '번'); }
   showHearts(await PrincessDB.hearts.get(todayIso));
+  // 뿅 소리: 파일 없이 Web Audio로 짧게 음이 올라가는 소리 (누를 때마다 음높이가 조금씩 달라요)
+  let audioCtx;
+  function boing() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const t = audioCtx.currentTime, base = 520 + Math.random() * 160;
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(base, t);
+      osc.frequency.exponentialRampToValueAtTime(base * 2.3, t + 0.09);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.28, t + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.19);
+    } catch (e) {}
+  }
   bh.addEventListener('click', async () => {
+    boing();
     bh.classList.remove('pop'); void bh.offsetWidth; bh.classList.add('pop');
     showHearts(await PrincessDB.hearts.add(iso(new Date())));
   });
@@ -1189,7 +1227,7 @@ body { margin: 0; }
     { id: 'green', name: '초록', swatch: '#6fbb8a' }, { id: 'white', name: '흰색', swatch: '#ffffff' }
   ];
   const CHAR_LABEL = { bunny: '꼬물거리는 하얀 토끼, 하트가 퐁퐁', clover: '흔들흔들 네잎클로버, 하트가 퐁퐁' };
-  let prefs = Object.assign({ theme: 'pink', character: 'bunny' }, await PrincessDB.prefs.get());
+  let prefs = Object.assign({ theme: 'pink', character: 'bunny', notify: false }, await PrincessDB.prefs.get());
   function applyTheme() {
     if (prefs.theme === 'pink') delete document.documentElement.dataset.theme;
     else document.documentElement.dataset.theme = prefs.theme;
@@ -1201,6 +1239,9 @@ body { margin: 0; }
     if (drawCharacter) drawCharacter();
     document.querySelectorAll('.char-opt').forEach(b => b.setAttribute('aria-checked', b.dataset.char === character));
     document.querySelectorAll('.swatch').forEach(b => b.setAttribute('aria-checked', b.dataset.theme === prefs.theme));
+    updateFavicon();
+    renderBell();
+    scheduleNotify();
   }
   document.getElementById('swatches').innerHTML = THEMES.map(t =>
     '<button type="button" class="swatch" role="radio" data-theme="' + t.id + '"><i style="background:' + t.swatch + '"></i>' + t.name + '</button>').join('');
@@ -1212,6 +1253,140 @@ body { margin: 0; }
   }
   document.querySelectorAll('.char-opt').forEach(b => b.addEventListener('click', () => setPref('character', b.dataset.char)));
   document.querySelectorAll('.swatch').forEach(b => b.addEventListener('click', () => setPref('theme', b.dataset.theme)));
+
+  // ---- 알림: 7시 날씨 / 12시 점심 / 18시 하루 마무리 / 21시 내일 날씨 / 23시 굿나잇 ----
+  // 앱(탭)이 열려 있거나 백그라운드에 있을 때 보내요. 앱을 완전히 닫았을 때도 받으려면 푸시 서버가 필요해요.
+  const NOTIFY_HOURS = [7, 12, 18, 21, 23];
+  const pick = list => list[Math.floor(Math.random() * list.length)];
+  const callName = () => profile && profile.name ? profile.name + '님, ' : '';
+  const LUNCH = [
+    '점심 식사 중이신가요? 맛있게 드시고 남은 오후도 화이팅!',
+    '점심은 드셨어요? 든든하게 먹고 오후도 힘내요',
+    '벌써 점심시간이에요. 잠깐 쉬어 가요 ・₊✧',
+    '오늘 점심 메뉴는 뭐예요? 맛있는 거 먹고 기분 충전해요',
+    '오전도 수고했어요. 따뜻한 밥 한 끼 챙겨 먹어요',
+    '바빠도 점심은 꼭 챙겨요. 오후는 더 잘될 거예요',
+    '식사 후에 물 한 잔, 잊지 마세요',
+    '점심 먹고 잠깐 햇빛 쬐는 건 어때요?'
+  ];
+  const EVENING = [
+    '오늘 하루도 고생 많았어요. 투두에서 잊은 게 없는지 확인해 보실래요?',
+    '퇴근 시간이에요! 오늘 할 일 다 끝냈는지 한번 볼까요?',
+    '하루가 저물어 가요. 남은 할 일이 있는지 살짝 확인해 봐요',
+    '오늘도 정말 수고했어요. 체크 못 한 일은 없나요?',
+    '저녁 시간이에요. 투두 한 번 보고 마음 편히 쉬어요',
+    '오늘 한 일, 하나씩 체크해 봐요. 뿌듯할 거예요'
+  ];
+  const NIGHT = [
+    '좋은 밤 되세요. 오늘도 수고 많았어요 ・₊✧',
+    '이제 푹 쉬어요. 내일도 반짝이는 하루가 될 거예요',
+    '오늘 하루도 잘 해냈어요. 편안한 밤 보내요',
+    '따뜻하게 덮고 푹 자요. 좋은 꿈 꿔요',
+    '내일 또 만나요. 굿나잇 ・₊✧',
+    '휴대폰 내려놓고 푹 잘 시간이에요'
+  ];
+  const WX_TOMORROW = { sun: '맑을 예정이에요', partly: '구름이 조금 낄 예정이에요', cloud: '흐릴 예정이에요',
+    rain: '비 소식이 있어요', snow: '눈 소식이 있어요', storm: '천둥번개 소식이 있어요' };
+  // 날씨 팁: 기온(최저·최고 둘 다 기준), 비·눈, 건조
+  function weatherTips(w, i) {
+    const lo = Math.round(w.min[i]), hi = Math.round(w.max[i]), kind = wxKind(w.code[i]);
+    const tips = [];
+    if (kind === 'snow') tips.push('눈이 와요, 우산 챙기는 거 잊지 마세요');
+    else if (kind === 'rain' || kind === 'storm' || (w.rain && w.rain[i] >= 60)) tips.push('비가 와요, 우산 챙기는 거 잊지 마세요');
+    if (hi < 10) tips.push('따뜻한 외투를 걸치세요');            // 최저·최고 모두 10도 미만
+    else if (hi < 20) tips.push('가벼운 외투를 챙겨 나가요');      // 최저·최고 모두 20도 미만
+    if (hi > 30) tips.push('많이 더워요, 물을 많이 마시세요');
+    if (w.hum && w.hum[i] < 40) tips.push('많이 건조해요, 물을 많이 챙겨 드세요');
+    return { lo, hi, kind, tips };
+  }
+  async function notifyMessage(hour) {
+    if (hour === 7 || hour === 21) {
+      const w = await fetchWeather().catch(() => null);
+      if (!w) return hour === 7 ? '좋은 아침이에요! 오늘도 반짝이는 하루 보내요' : '내일도 기대되는 하루예요. 잊은 일이 없나 확인해 봐요';
+      if (hour === 7) {
+        const { lo, hi, tips } = weatherTips(w, 0);
+        return callName() + '오늘의 날씨는 최저 ' + lo + '도, 최고 ' + hi + '도예요.' + (tips.length ? ' ' + tips.join('. ') + '.' : '');
+      }
+      const { lo, hi, kind, tips } = weatherTips(w, 1);
+      const wet = tips.some(x => x.includes('우산'));
+      const rest = tips.filter(x => !x.includes('우산'));   // 비·눈은 앞 문장에서 이미 말했으니 우산만 따로
+      const phrase = wet && (kind === 'sun' || kind === 'partly' || kind === 'cloud') ? '비 소식이 있어요' : WX_TOMORROW[kind];
+      return callName() + '내일의 날씨는 최저 ' + lo + '도, 최고 ' + hi + '도이고 ' + phrase + '.' +
+        (wet ? ' 우산을 미리 챙겨 두세요.' : '') + (rest.length ? ' ' + rest.join('. ') + '.' : '') +
+        ' 옷은 미리 챙겨 두시고, 잊은 일이 없나 확인해 봐요.';
+    }
+    if (hour === 12) return callName() + pick(LUNCH);
+    if (hour === 18) {
+      const k = iso(new Date()), left = (await PrincessDB.todos.all()).filter(t => t.date === k && !t.done).length;
+      return callName() + pick(EVENING) + (left ? ' (오늘 남은 할 일 ' + left + '개)' : '');
+    }
+    return callName() + pick(NIGHT);
+  }
+  let swReg = null;
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(r => { swReg = r; }).catch(() => {});
+  async function sendNotification(body, tag) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const opts = { body, tag, icon: faviconUrl, badge: faviconUrl };
+    try { if (swReg) { await swReg.showNotification('₊‧Todo‧₊', opts); return; } } catch (e) {}
+    try { new Notification('₊‧Todo‧₊', opts); } catch (e) {}
+  }
+  // 다음 알림 시각에 맞춰 타이머. 같은 시간 알림은 하루에 한 번만, 1시간 넘게 늦으면 건너뜀
+  let notifyTimer;
+  function scheduleNotify() {
+    clearTimeout(notifyTimer);
+    if (!prefs.notify) return;
+    const n = new Date(), next = new Date(n);
+    const h = NOTIFY_HOURS.find(x => x > n.getHours() || (x === n.getHours() && n.getMinutes() === 0 && n.getSeconds() < 5));
+    if (h === undefined) { next.setDate(next.getDate() + 1); next.setHours(NOTIFY_HOURS[0], 0, 0, 0); }
+    else next.setHours(h, 0, 0, 0);
+    notifyTimer = setTimeout(fireNotify, Math.max(1000, next - n));
+  }
+  async function fireNotify() {
+    const n = new Date(), k = iso(n), hour = n.getHours();
+    const slot = NOTIFY_HOURS.includes(hour) ? hour : null;
+    const log = (await PrincessDB.cache.get('notify-log')) || { value: {} };
+    if (slot !== null && n.getMinutes() < 60 && log.value.date === k && (log.value.sent || []).includes(slot)) { scheduleNotify(); return; }
+    if (slot !== null && prefs.notify) {
+      await sendNotification(await notifyMessage(slot), 'todo-' + slot);
+      const sent = log.value.date === k ? (log.value.sent || []) : [];
+      await PrincessDB.cache.set('notify-log', { date: k, sent: sent.concat(slot) });
+    }
+    scheduleNotify();
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleNotify(); });
+
+  // 설정의 종 버튼: 켜면 알림 권한을 요청하고 확인 알림을 하나 보내요
+  const bell = document.getElementById('bellBtn');
+  function renderBell() {
+    const on = !!prefs.notify && 'Notification' in window && Notification.permission === 'granted';
+    bell.classList.toggle('on', on);
+    bell.setAttribute('aria-pressed', on);
+    bell.setAttribute('aria-label', on ? '알림 켜짐, 누르면 꺼요' : '알림 꺼짐, 누르면 켜요');
+  }
+  bell.addEventListener('click', async () => {
+    if (bell.classList.contains('on')) { await setPref('notify', false); showToast('알림을 껐어요'); return; }
+    if (!('Notification' in window)) { showToast('이 브라우저는 알림을 지원하지 않아요'); return; }
+    const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+    if (perm !== 'granted') { showToast('브라우저 설정에서 알림을 허용해 주세요'); renderBell(); return; }
+    await setPref('notify', true);
+    showToast('알림을 켰어요 ・₊✧');
+    sendNotification('알림을 켰어요 ・₊✧ 매일 7시·12시·18시·21시·23시에 찾아올게요', 'todo-on');
+  });
+
+  // ---- 사이트 아이콘: 투명 배경에 TO / DO, 고른 테마 색으로 ----
+  let faviconUrl = '';
+  function updateFavicon() {
+    const color = getComputedStyle(document.documentElement).getPropertyValue('--rose').trim() || '#c95a86';
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const g = c.getContext('2d');
+    g.fillStyle = color; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    g.font = '700 30px "Cormorant Garamond", Georgia, "Times New Roman", serif';
+    g.fillText('TO', 32, 29); g.fillText('DO', 32, 60);
+    faviconUrl = c.toDataURL('image/png');
+    let link = document.querySelector('link[rel="icon"]');
+    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.append(link); }
+    link.type = 'image/png'; link.href = faviconUrl;
+  }
 
   // ---- 프로필: 처음 켤 때 이름·생년월일 묻기, 설정에서 수정 ----
   const pfDlg = document.getElementById('profileDialog'), pfName = document.getElementById('pfName'),
@@ -1419,6 +1594,7 @@ body { margin: 0; }
   })();
 
   applyTheme();
+  document.fonts && document.fonts.ready.then(updateFavicon);   // 글꼴이 늦게 오면 아이콘 다시
 
   // ---- 눈 내리는 배경 ----
   const cv = document.getElementById('snow');
