@@ -12,7 +12,7 @@
     diaries: 'date'      // { date: 'YYYY-MM-DD', text, createdAt, updatedAt }  하루에 일기 하나
   });
   db.version(3).stores({
-    settings: 'key'      // { key: 'profile', name, birth: 'YYYY-MM-DD' }
+    settings: 'key'      // { key: 'profile', name, birth: 'YYYY-MM-DD' } / { key: 'prefs', theme, character }
   });
 
   const newId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
@@ -61,6 +61,11 @@
     profile: {
       get: () => db.settings.get('profile'),   // 없으면 undefined → 처음 켠 사용자
       set: (name, birth) => db.settings.put({ key: 'profile', name, birth })
+    },
+
+    prefs: {   // 테마: { theme: 'pink' | 'black' | 'blue' | 'yellow' | 'green' | 'white', character: 'bunny' | 'clover' }
+      async get() { const p = await db.settings.get('prefs'); if (!p) return {}; const { key, ...rest } = p; return rest; },
+      set: prefs => db.settings.put({ key: 'prefs', theme: prefs.theme, character: prefs.character })
     },
 
     cache: {

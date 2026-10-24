@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>₊‧Todo‎‧₊</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<script>try { var t = localStorage.getItem('princessTodo.theme'); if (t && t !== 'pink') document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
 <style>
@@ -27,6 +28,21 @@
   --ink: #4c2f45;
   --muted: #8f7a92;
   --frost: rgba(255, 255, 255, .78);
+  --rose-hi: #e88db0;          /* 버튼·리본 그라데이션 위쪽 */
+  --rose-rgb: 201, 90, 134;
+  --rose-soft-rgb: 247, 213, 227;
+  --heart: #e994b6;            /* 하트 아이콘 */
+  --heart-light: #fde3ee;
+  --heart-deep: #b9a6e0;
+  --cool: #6f8cc4;             /* 최저기온·토요일 */
+  --surface: #fff;             /* 입력칸·밝은 버튼 바탕 */
+  --tile: rgba(255, 255, 255, .7);
+  --nav-bg: rgba(255, 255, 255, .82);
+  --card-border: rgba(255, 255, 255, .9);
+  --dialog-bg: rgba(255, 255, 255, .94);
+  --line: rgba(185, 192, 214, .6);
+  --shadow-rgb: 140, 110, 170;
+  --on-accent: #fff;           /* 진한 색 버튼 위 글자 */
   --f-kr-display: "Gowun Batang", "Noto Serif KR", serif;
   --f-en: "Cormorant Garamond", "Times New Roman", serif;
   --f-num: "OgRenaissanceSecret", "Cormorant Garamond", serif;
@@ -52,28 +68,67 @@ body {
 
 /* 헤더: 캘린더 아이콘 + 날짜 한 줄 */
 .head { display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 10px; }
+.f-rose { fill: var(--rose); } .f-rose-hi { fill: var(--rose-hi); } .f-heart { fill: var(--heart); }
+.s-heart-light { stop-color: var(--heart-light); } .s-heart { stop-color: var(--heart); } .s-heart-deep { stop-color: var(--heart-deep); }
 .cal-ico { width: 42px; height: 44px; flex: none; filter: drop-shadow(0 4px 8px rgba(191,154,72,.3)); }
 .head-text { display: flex; flex-direction: column; align-items: center; text-align: center; line-height: 1.15; }
 .date { font-family: var(--f-en); font-weight: 600; font-size: 29.5px; letter-spacing: .03em; font-variant-numeric: tabular-nums; }
 .en-sub { font-family: var(--f-en); font-style: italic; font-size: 13px; color: var(--muted); letter-spacing: .02em; }
+
+/* ===== 색상 팔레트 6가지 (설정 > 색상). 분홍은 위 :root 기본값 ===== */
+:root[data-theme="blue"] {
+  --blush: #e6effc; --sky: #f2f6fe; --lilac: #dce7fa;
+  --rose: #3f6fb5; --rose-rgb: 63, 111, 181; --rose-hi: #6f9be0; --rose-soft: #d4e3f8; --rose-soft-rgb: 212, 227, 248;
+  --heart: #7fa8e6; --heart-light: #e3eefc; --heart-deep: #a9b4ea;
+  --ink: #24344f; --muted: #6f7f99; --cool: #5b86c9; --shadow-rgb: 90, 120, 170;
+}
+:root[data-theme="yellow"] {
+  --blush: #fff6dd; --sky: #fffcf2; --lilac: #fbefc9;
+  --rose: #b07d12; --rose-rgb: 176, 125, 18; --rose-hi: #e5b84a; --rose-soft: #fbecc0; --rose-soft-rgb: 251, 236, 192;
+  --heart: #f2c55c; --heart-light: #fff3cf; --heart-deep: #f0a868;
+  --ink: #4a3a1a; --muted: #8f7d5a; --shadow-rgb: 170, 140, 80;
+}
+:root[data-theme="green"] {
+  --blush: #e8f5ec; --sky: #f5fbf6; --lilac: #dcefe1;
+  --rose: #3f8a5c; --rose-rgb: 63, 138, 92; --rose-hi: #6fbb8a; --rose-soft: #d3ecdb; --rose-soft-rgb: 211, 236, 219;
+  --heart: #86cc9d; --heart-light: #e6f6eb; --heart-deep: #9fcfbe;
+  --ink: #22402e; --muted: #6c8a77; --cool: #5b86c9; --shadow-rgb: 90, 140, 110;
+}
+:root[data-theme="white"] {
+  --blush: #ffffff; --sky: #fafafb; --lilac: #f1f1f5;
+  --rose: #7f7b8c; --rose-rgb: 127, 123, 140; --rose-hi: #b4b0c2; --rose-soft: #ecebf0; --rose-soft-rgb: 236, 235, 240;
+  --heart: #d6d3df; --heart-light: #ffffff; --heart-deep: #c0bdcc;
+  --ink: #3a3842; --muted: #8e8b98; --cool: #7d8fb3; --shadow-rgb: 120, 118, 135;
+  --frost: rgba(255, 255, 255, .9);
+}
+:root[data-theme="black"] {
+  color-scheme: dark;
+  --blush: #17151b; --sky: #1f1c24; --lilac: #25212b;
+  --rose: #d9b469; --rose-rgb: 217, 180, 105; --rose-hi: #ecd395; --rose-soft: #3a3440; --rose-soft-rgb: 58, 52, 64;
+  --heart: #c98fae; --heart-light: #f1d3e2; --heart-deep: #7d6a9e;
+  --ink: #f1e9ef; --muted: #a89db0; --cool: #8fa9dd; --shadow-rgb: 0, 0, 0;
+  --surface: #2a2630; --frost: rgba(42, 38, 48, .84); --tile: rgba(255, 255, 255, .06);
+  --nav-bg: rgba(28, 25, 32, .92); --card-border: rgba(255, 255, 255, .08); --dialog-bg: rgba(36, 32, 42, .97);
+  --line: rgba(255, 255, 255, .14); --on-accent: #1e1b22;
+}
 
 /* 서리유리 카드 */
 .card {
   position: relative;
   background: var(--frost);
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,.9);
+  border: 1px solid var(--card-border);
   border-radius: 26px;
-  box-shadow: 0 0 0 1px var(--rose-soft), 0 12px 28px rgba(140, 110, 170, .14);
+  box-shadow: 0 0 0 1px var(--rose-soft), 0 12px 28px rgba(var(--shadow-rgb), .14);
 }
 .card::after { /* 안쪽 은빛 테두리 */
   content: ""; position: absolute; inset: 5px; border-radius: 21px;
-  border: 1px dashed rgba(185,192,214,.6); pointer-events: none;
+  border: 1px dashed var(--line); pointer-events: none;
 }
 .tab {
   position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
   width: 64px; height: 30px;
-  background: linear-gradient(180deg, #e384a9, var(--rose));
+  background: linear-gradient(180deg, var(--rose-hi), var(--rose));
   clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
   display: grid; place-items: start center; padding-top: 5px;
 }
@@ -88,7 +143,7 @@ body {
 .todo-list { list-style: none; flex: 1; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow-y: auto; text-align: left; }
 .todo-list li {
   display: grid; grid-template-columns: 14px 1fr auto; gap: 7px; align-items: center; min-width: 0;
-  padding: 7px 9px; border-radius: 12px; background: rgba(247,213,227,.35);
+  padding: 7px 9px; border-radius: 12px; background: rgba(var(--rose-soft-rgb),.35);
 }
 .todo-list li .t { overflow-wrap: anywhere; font-size: 12.5px; }
 .todo-list li .d { font-family: var(--f-en); font-weight: 600; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -121,9 +176,9 @@ body {
 .wx-ico { height: 40px; display: grid; place-items: center; }
 .weather svg { width: 44px; height: 38px; margin-top: 2px; }
 .temps { font-family: var(--f-en); font-weight: 600; font-size: 15.5px; font-variant-numeric: tabular-nums; }
-.temps .lo { color: #6f8cc4; } .temps .hi { color: var(--rose); }
+.temps .lo { color: var(--cool); } .temps .hi { color: var(--rose); }
 .big-heart { border: 0; background: none; padding: 0; cursor: pointer; display: grid; place-items: center; }
-.big-heart svg { width: 100%; max-width: 108px; filter: drop-shadow(0 8px 14px rgba(201,90,134,.28)); }
+.big-heart svg { width: 100%; max-width: 108px; filter: drop-shadow(0 8px 14px rgba(var(--rose-rgb),.28)); }
 .big-heart.pop svg { animation: pop .5s ease; }
 .heart-count { font-family: var(--f-num); font-size: 18px; line-height: 1; color: var(--rose); margin-top: 4px; font-variant-numeric: tabular-nums; }
 .heart-count::before { content: "♡ "; font-family: var(--f-body); font-size: 12px; }
@@ -136,10 +191,10 @@ body {
 .pcal { --fc-border-color: transparent; --fc-today-bg-color: transparent; --fc-page-bg-color: transparent; font-family: var(--f-body); }
 .pcal .fc-col-header-cell-cushion { padding: 0 0 4px; font-size: 10px; font-weight: 400; color: var(--muted); text-decoration: none; }
 .pcal .fc-col-header-cell.sun .fc-col-header-cell-cushion { color: var(--rose); }
-.pcal .fc-col-header-cell.sat .fc-col-header-cell-cushion { color: #6f8cc4; }
+.pcal .fc-col-header-cell.sat .fc-col-header-cell-cushion { color: var(--cool); }
 .pcal td.fc-daygrid-day { padding: 3px 2px; }
 .pcal .fc-daygrid-day-frame {
-  min-height: 0; padding: 7px 0 6px; border-radius: 14px; background: rgba(255,255,255,.7);
+  min-height: 0; padding: 7px 0 6px; border-radius: 14px; background: var(--tile);
   box-shadow: inset 0 0 0 1px var(--rose-soft);
 }
 .pcal .fc-daygrid-day-events, .pcal .fc-daygrid-day-bg { display: none; }
@@ -149,8 +204,8 @@ body {
 .pcal .c { font-family: var(--f-en); font-weight: 600; font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 14px; }
 .pcal .c.has { color: var(--rose); font-weight: 700; }
 .pcal .c.has::before { content: "♡ "; font-weight: 400; }
-.pcal td.today .fc-daygrid-day-frame { background: linear-gradient(180deg, #e88db0, var(--rose)); box-shadow: 0 0 0 2px var(--gold-hi), 0 4px 10px rgba(201,90,134,.3); color: #fff; }
-.pcal td.today .c { color: #fff; }
+.pcal td.today .fc-daygrid-day-frame { background: linear-gradient(180deg, var(--rose-hi), var(--rose)); box-shadow: 0 0 0 2px var(--gold-hi), 0 4px 10px rgba(var(--rose-rgb),.3); color: var(--on-accent); }
+.pcal td.today .c { color: var(--on-accent); }
 .pcal td.first .fc-daygrid-day-frame { box-shadow: inset 0 0 0 1.5px var(--gold); }
 
 /* ===== 할 일 등록 화면 ===== */
@@ -161,7 +216,7 @@ body {
 .month-nav .month { margin: 0; min-width: 150px; }
 .month-nav button {
   width: 30px; height: 30px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center;
-  background: linear-gradient(180deg, #fff, var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi); color: var(--rose);
+  background: linear-gradient(180deg, var(--surface), var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi); color: var(--rose);
 }
 .month-nav button svg { width: 14px; height: 14px; }
 .pcal-month td.fc-daygrid-day { padding: 2px 1px; cursor: pointer; }
@@ -169,14 +224,14 @@ body {
 .pcal-month .n { font-size: 15px; }
 .pcal-month .c { font-size: 9.5px; min-height: 12px; }
 .pcal-month td.fc-day-other .fc-daygrid-day-frame { opacity: .35; }
-.pcal-month td.sel .fc-daygrid-day-frame { box-shadow: 0 0 0 2px var(--rose), 0 4px 10px rgba(201,90,134,.22); background: #fff; }
-.pcal-month td.today.sel .fc-daygrid-day-frame { box-shadow: 0 0 0 2px var(--gold), 0 4px 10px rgba(201,90,134,.3); background: linear-gradient(180deg, #e88db0, var(--rose)); }
+.pcal-month td.sel .fc-daygrid-day-frame { box-shadow: 0 0 0 2px var(--rose), 0 4px 10px rgba(var(--rose-rgb),.22); background: var(--surface); }
+.pcal-month td.today.sel .fc-daygrid-day-frame { box-shadow: 0 0 0 2px var(--gold), 0 4px 10px rgba(var(--rose-rgb),.3); background: linear-gradient(180deg, var(--rose-hi), var(--rose)); }
 .pcal-month td.fc-daygrid-day:focus-visible { outline: 2px solid var(--gold); outline-offset: -1px; border-radius: 12px; }
 
 .dayplan { padding: 38px 14px 16px; text-align: center; }
 .dayplan .sel-date { font-family: var(--f-kr-display); font-weight: 700; font-size: 15px; margin-top: 8px; }
 .day-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; text-align: left; }
-.day-list li { display: grid; grid-template-columns: 28px 1fr 28px; gap: 4px; align-items: center; padding: 4px 6px; border-radius: 12px; background: rgba(247,213,227,.35); }
+.day-list li { display: grid; grid-template-columns: 28px 1fr 28px; gap: 4px; align-items: center; padding: 4px 6px; border-radius: 12px; background: rgba(var(--rose-soft-rgb),.35); }
 .day-list li .t { overflow-wrap: anywhere; font-size: 12.5px; }
 .day-list li.done .t { text-decoration: line-through; text-decoration-color: var(--rose); color: var(--muted); }
 .day-list li.done .chk svg path { fill: var(--gold); }
@@ -190,7 +245,7 @@ body {
 .done-card { padding: 38px 14px 16px; text-align: center; }
 .done-total { font-size: 11px; color: var(--muted); margin-top: 2px; }
 .done-list { list-style: none; margin: 12px 0 0; padding: 0; text-align: left; }
-.done-list li { display: flex; align-items: baseline; gap: 10px; padding: 9px 6px; border-bottom: 1px dashed rgba(185,192,214,.6); min-width: 0; }
+.done-list li { display: flex; align-items: baseline; gap: 10px; padding: 9px 6px; border-bottom: 1px dashed var(--line); min-width: 0; }
 .done-list li:last-child { border-bottom: 0; }
 .done-list .when { flex: none; min-width: 74px; font-family: var(--f-num); font-size: 14px; color: var(--rose); font-variant-numeric: tabular-nums; }
 .done-list .t { flex: 1; min-width: 0; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -199,8 +254,8 @@ body {
 .add-btn {
   flex: none;
   width: 100%; border: 0; cursor: pointer; border-radius: 99px; padding: 14px 0;
-  font-family: var(--f-kr-display); font-weight: 700; font-size: 15px; color: #fff; letter-spacing: .04em;
-  background: linear-gradient(180deg, #e88db0, var(--rose)); box-shadow: 0 0 0 1px var(--gold-hi), 0 8px 18px rgba(201,90,134,.3);
+  font-family: var(--f-kr-display); font-weight: 700; font-size: 15px; color: var(--on-accent); letter-spacing: .04em;
+  background: linear-gradient(180deg, var(--rose-hi), var(--rose)); box-shadow: 0 0 0 1px var(--gold-hi), 0 8px 18px rgba(var(--rose-rgb),.3);
 }
 .add-btn { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .add-btn svg { width: 15px; height: 15px; }
@@ -209,21 +264,21 @@ body {
 /* 할 일 입력 팝업 */
 .add-dialog {
   width: min(340px, calc(100vw - 32px)); border: 0; padding: 0; border-radius: 26px; color: var(--ink);
-  background: rgba(255,255,255,.94); box-shadow: 0 0 0 1px var(--rose-soft), 0 20px 50px rgba(110,70,120,.3);
+  background: var(--dialog-bg); box-shadow: 0 0 0 1px var(--rose-soft), 0 20px 50px rgba(var(--shadow-rgb),.3);
 }
-.add-dialog::backdrop { background: rgba(76,47,69,.28); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.add-dialog::backdrop { background: rgba(var(--shadow-rgb),.3); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
 .add-dialog form { position: relative; padding: 40px 18px 18px; text-align: center; }
 .add-dialog .tab { top: 0; }
 .add-dialog .dlg-date { font-family: var(--f-kr-display); font-size: 13px; color: var(--muted); margin-top: 6px; }
 .add-dialog input {
   width: 100%; box-sizing: border-box; margin-top: 14px; padding: 12px 14px; border-radius: 14px;
-  border: 1px solid var(--rose-soft); background: #fff; font: 15px var(--f-body); color: var(--ink); outline: none;
+  border: 1px solid var(--rose-soft); background: var(--surface); font: 15px var(--f-body); color: var(--ink); outline: none;
 }
-.add-dialog input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(201,90,134,.15); }
+.add-dialog input:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(var(--rose-rgb),.15); }
 .dlg-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
 .dlg-actions button { border: 0; border-radius: 99px; padding: 11px 0; cursor: pointer; font: 700 14px var(--f-body); }
 .dlg-actions .cancel { background: var(--rose-soft); color: var(--rose); }
-.dlg-actions .ok { background: linear-gradient(180deg, #e88db0, var(--rose)); color: #fff; }
+.dlg-actions .ok { background: linear-gradient(180deg, var(--rose-hi), var(--rose)); color: var(--on-accent); }
 .dlg-actions .ok:disabled { opacity: .45; cursor: default; }
 
 /* ===== 일기장 화면 ===== */
@@ -235,18 +290,18 @@ body {
   flex: 1; width: 100%; box-sizing: border-box; min-height: 0; margin-top: 12px; resize: none;
   border: 0; outline: none; padding: 4px 6px; border-radius: 0;
   font: 14px/28px var(--f-kr-display); color: var(--ink); text-align: left;
-  background: repeating-linear-gradient(180deg, transparent 0 27px, rgba(201,90,134,.16) 27px 28px);
+  background: repeating-linear-gradient(180deg, transparent 0 27px, rgba(var(--rose-rgb),.16) 27px 28px);
   background-attachment: local;
 }
 .diary-text::placeholder { color: var(--muted); opacity: .8; }
-.diary-text.editing { box-shadow: inset 0 0 0 1px var(--rose-soft); border-radius: 12px; background-color: rgba(255,255,255,.6); }
+.diary-text.editing { box-shadow: inset 0 0 0 1px var(--rose-soft); border-radius: 12px; background-color: var(--tile); }
 .diary-text[readonly] { cursor: default; }
 .diary-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; margin-top: 10px; }
 .diary-btn {
   border: 0; cursor: pointer; border-radius: 99px; padding: 9px 22px;
-  font: 700 13px var(--f-body); color: var(--rose); background: linear-gradient(180deg, #fff, var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi);
+  font: 700 13px var(--f-body); color: var(--rose); background: linear-gradient(180deg, var(--surface), var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi);
 }
-.diary-btn.save { color: #fff; background: linear-gradient(180deg, #e88db0, var(--rose)); }
+.diary-btn.save { color: var(--on-accent); background: linear-gradient(180deg, var(--rose-hi), var(--rose)); }
 .diary-btn:disabled { opacity: .4; cursor: default; }
 .diary-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 #weekCal .c.has::before { content: "✧"; }
@@ -257,11 +312,28 @@ body {
 .profile-card { padding: 34px 16px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .avatar {
   width: 112px; height: 112px; border-radius: 50%; margin-top: 12px; display: grid; place-items: center; overflow: hidden;
-  background: radial-gradient(circle at 50% 40%, #fff, var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi), 0 8px 18px rgba(201,90,134,.18);
+  background: radial-gradient(circle at 50% 40%, var(--surface), var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi), 0 8px 18px rgba(var(--rose-rgb),.18);
 }
 .avatar canvas { width: 96px; height: 90px; image-rendering: pixelated; image-rendering: crisp-edges; margin-top: 6px; }
 .profile-name { font-family: var(--f-kr-display); font-weight: 700; font-size: 18px; margin-top: 8px; }
 .profile-birth { font-family: var(--f-num); font-size: 15px; color: var(--muted); margin-bottom: 8px; }
+.theme-card { padding: 34px 14px 14px; text-align: center; }
+.opt-label { text-align: left; font-size: 12px; color: var(--muted); margin: 10px 2px 6px; }
+.char-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.char-opt, .swatch {
+  border: 0; cursor: pointer; font: 700 13px var(--f-body); color: var(--muted); border-radius: 14px; padding: 9px 0;
+  background: var(--tile); box-shadow: inset 0 0 0 1px var(--rose-soft);
+}
+.char-opt[aria-checked="true"] { color: var(--rose); background: var(--surface); box-shadow: 0 0 0 2px var(--rose); }
+.swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.swatch { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 7px 0 6px; font-size: 11px; font-weight: 400; }
+.swatch i { width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.12), inset 0 0 0 3px rgba(255,255,255,.55); }
+.swatch[aria-checked="true"] { color: var(--rose); font-weight: 700; background: var(--surface); box-shadow: 0 0 0 2px var(--rose); }
+.char-opt:focus-visible, .swatch:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+#page-settings { gap: 10px; }
+#page-settings .profile-card { padding-top: 32px; padding-bottom: 14px; gap: 4px; }
+#page-settings .avatar { width: 92px; height: 92px; margin-top: 8px; }
+#page-settings .avatar canvas { width: 80px; height: 75px; }
 .pf-label { display: block; text-align: left; font-size: 12px; color: var(--muted); margin: 14px 2px -8px; }
 .add-dialog.onboarding .dlg-actions { grid-template-columns: 1fr; }
 .add-dialog.onboarding .cancel { display: none; }
@@ -269,10 +341,10 @@ body {
 /* 하단 탭바 */
 .nav {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
-  background: rgba(255,255,255,.82);
+  background: var(--nav-bg);
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   border-top: 1px solid var(--rose-soft);
-  box-shadow: 0 -6px 18px rgba(140,110,170,.12);
+  box-shadow: 0 -6px 18px rgba(var(--shadow-rgb),.12);
   padding-top: 8px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   padding-left: max(8px, env(safe-area-inset-left, 0px));
@@ -286,9 +358,9 @@ body {
 .nav svg { width: 24px; height: 24px; }
 .nav .ico { padding: 4px 12px; display: grid; place-items: center; border-radius: 14px; }
 .nav button[aria-current="page"] { color: var(--rose); font-weight: 700; }
-.nav button[aria-current="page"] .ico { background: linear-gradient(180deg, #fff, var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi); }
+.nav button[aria-current="page"] .ico { background: linear-gradient(180deg, var(--surface), var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi); }
 
-.toast { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 99px; font-size: 12px; white-space: nowrap; z-index: 6; display: flex; align-items: center; gap: 10px; }
+.toast { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 8px 14px; border-radius: 99px; font-size: 12px; white-space: nowrap; z-index: 6; display: flex; align-items: center; gap: 10px; }
 .toast[hidden] { display: none; }
 #page-add:not([hidden]) ~ .toast, #page-diary:not([hidden]) ~ .toast { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }   /* 투두 추가하기 버튼 위로 */
 .toast button { border: 0; background: none; color: var(--gold-hi); font: inherit; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline; }
@@ -311,7 +383,7 @@ body { margin: 0; }
     width: 393px; height: min(852px, calc(100dvh - 48px)); flex: none;
     overflow: hidden; transform: translateZ(0); border-radius: 44px;
     background: linear-gradient(180deg, var(--blush) 0%, var(--sky) 38%, var(--lilac) 75%, var(--blush) 100%);
-    box-shadow: 0 0 0 10px #fff, 0 0 0 11px var(--rose-soft), 0 30px 60px rgba(110,70,120,.25);
+    box-shadow: 0 0 0 10px var(--surface), 0 0 0 11px var(--rose-soft), 0 30px 60px rgba(var(--shadow-rgb),.25);
   }
   #phone > .app { min-height: 0; }
 }
@@ -394,10 +466,10 @@ body { margin: 0; }
         <linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e4ad"/><stop offset=".5" stop-color="#bf9a48"/><stop offset="1" stop-color="#f1dc9e"/></linearGradient>
       </defs>
       <rect x="2" y="6" width="38" height="36" rx="8" fill="#fff" stroke="url(#cg)" stroke-width="1" vector-effect="non-scaling-stroke"/>
-      <path d="M2 14 a8 8 0 0 1 8 -8 h22 a8 8 0 0 1 8 8 v2 H2z" fill="#e384a9"/>
+      <path d="M2 14 a8 8 0 0 1 8 -8 h22 a8 8 0 0 1 8 8 v2 H2z" class="f-rose-hi"/>
       <rect x="11" y="1.5" width="3.4" height="9" rx="1.7" fill="url(#cg)"/>
       <rect x="27.6" y="1.5" width="3.4" height="9" rx="1.7" fill="url(#cg)"/>
-      <path d="M21 37 C12 31 11.5 24.5 15.5 23.2 C18 22.4 20.2 24 21 25.8 C21.8 24 24 22.4 26.5 23.2 C30.5 24.5 30 31 21 37Z" fill="#c95a86"/>
+      <path d="M21 37 C12 31 11.5 24.5 15.5 23.2 C18 22.4 20.2 24 21 25.8 C21.8 24 24 22.4 26.5 23.2 C30.5 24.5 30 31 21 37Z" class="f-rose"/>
       <path d="M16.5 26 C17 25 18 24.6 19 24.8" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
     </svg>
     <div class="head-text">
@@ -444,7 +516,7 @@ body { margin: 0; }
     <button class="big-heart" id="bigHeart" type="button" aria-label="하트">
       <svg viewBox="0 0 100 92" aria-hidden="true">
         <defs>
-          <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde3ee"/><stop offset=".55" stop-color="#e994b6"/><stop offset="1" stop-color="#b9a6e0"/></linearGradient>
+          <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="s-heart-light"/><stop offset=".55" class="s-heart"/><stop offset="1" class="s-heart-deep"/></linearGradient>
           <linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e4ad"/><stop offset=".5" stop-color="#bf9a48"/><stop offset="1" stop-color="#f1dc9e"/></linearGradient>
         </defs>
         <path d="M50 86 C14 62 4 42 8 24 C12 6 36 2 50 22 C64 2 88 6 92 24 C96 42 86 62 50 86Z" fill="url(#hg)" stroke="url(#gg)" stroke-width="1" vector-effect="non-scaling-stroke"/>
@@ -571,6 +643,18 @@ body { margin: 0; }
     <div class="profile-birth" id="profileBirth"></div>
     <button type="button" class="diary-btn" id="profileEdit">프로필 수정</button>
   </section>
+
+  <section class="card theme-card">
+    <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 1 L12.6 5.4 L17 7 L12.6 8.6 L11 13 L9.4 8.6 L5 7 L9.4 5.4Z" fill="#fff"/></svg></div>
+    <div class="title-en">Theme</div>
+    <div class="opt-label">캐릭터</div>
+    <div class="char-opts" role="radiogroup" aria-label="캐릭터">
+      <button type="button" class="char-opt" data-char="bunny" role="radio">토끼</button>
+      <button type="button" class="char-opt" data-char="clover" role="radio">네잎클로버</button>
+    </div>
+    <div class="opt-label">색상</div>
+    <div class="swatches" role="radiogroup" aria-label="색상" id="swatches"></div>
+  </section>
 </div>
 
 <dialog class="add-dialog" id="profileDialog" aria-labelledby="pfTitle">
@@ -615,6 +699,8 @@ body { margin: 0; }
   const EN_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const EN_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+  let character = 'bunny', drawCharacter = null;   // 픽셀 캐릭터 (테마에서 바꿈)
+
   // ---- 로컬 DB (db.js) ----
   await PrincessDB.init();
   let todos = await PrincessDB.todos.all();
@@ -625,7 +711,7 @@ body { margin: 0; }
 
   // ---- 이번 주 할 일 ----
   const weekEnd = iso(addDays(now, 6));
-  const heart = '<svg viewBox="0 0 20 18" aria-hidden="true"><path d="M10 17 C2 11 1 6 4 3 C6.5 .8 9 2.4 10 4.5 C11 2.4 13.5 .8 16 3 C19 6 18 11 10 17Z" fill="#e994b6"/></svg>';
+  const heart = '<svg viewBox="0 0 20 18" aria-hidden="true"><path d="M10 17 C2 11 1 6 4 3 C6.5 .8 9 2.4 10 4.5 C11 2.4 13.5 .8 16 3 C19 6 18 11 10 17Z" class="f-heart"/></svg>';
   const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   // 토스트 (버튼 하나 선택)
   const toast = document.getElementById('toast');
@@ -1079,6 +1165,35 @@ body { margin: 0; }
     diaryText.setSelectionRange(diaryText.value.length, diaryText.value.length);
   });
 
+  // ---- 테마: 캐릭터(토끼/네잎클로버) + 색상 팔레트 6가지, DB에 저장 ----
+  const THEMES = [   // 설정에 보여줄 순서와 견본 색 (실제 색값은 CSS의 :root[data-theme])
+    { id: 'black', name: '검정', swatch: '#1f1c24' }, { id: 'blue', name: '파랑', swatch: '#6f9be0' },
+    { id: 'yellow', name: '노랑', swatch: '#e5b84a' }, { id: 'pink', name: '분홍', swatch: '#e88db0' },
+    { id: 'green', name: '초록', swatch: '#6fbb8a' }, { id: 'white', name: '흰색', swatch: '#ffffff' }
+  ];
+  const CHAR_LABEL = { bunny: '꼬물거리는 하얀 토끼, 하트가 퐁퐁', clover: '흔들흔들 네잎클로버, 하트가 퐁퐁' };
+  let prefs = Object.assign({ theme: 'pink', character: 'bunny' }, await PrincessDB.prefs.get());
+  function applyTheme() {
+    if (prefs.theme === 'pink') delete document.documentElement.dataset.theme;
+    else document.documentElement.dataset.theme = prefs.theme;
+    try { localStorage.setItem('princessTodo.theme', prefs.theme); } catch (e) {}
+    character = prefs.character;
+    document.querySelector('.bunny-wrap').setAttribute('aria-label', CHAR_LABEL[character]);
+    if (drawCharacter) drawCharacter();
+    document.querySelectorAll('.char-opt').forEach(b => b.setAttribute('aria-checked', b.dataset.char === character));
+    document.querySelectorAll('.swatch').forEach(b => b.setAttribute('aria-checked', b.dataset.theme === prefs.theme));
+  }
+  document.getElementById('swatches').innerHTML = THEMES.map(t =>
+    '<button type="button" class="swatch" role="radio" data-theme="' + t.id + '"><i style="background:' + t.swatch + '"></i>' + t.name + '</button>').join('');
+  async function setPref(key, value) {
+    prefs[key] = value;
+    await PrincessDB.prefs.set(prefs);
+    applyTheme();
+    renderCal();   // 달력 오늘 칸 등 색 다시
+  }
+  document.querySelectorAll('.char-opt').forEach(b => b.addEventListener('click', () => setPref('character', b.dataset.char)));
+  document.querySelectorAll('.swatch').forEach(b => b.addEventListener('click', () => setPref('theme', b.dataset.theme)));
+
   // ---- 프로필: 처음 켤 때 이름·생년월일 묻기, 설정에서 수정 ----
   const pfDlg = document.getElementById('profileDialog'), pfName = document.getElementById('pfName'),
     pfBirth = document.getElementById('pfBirth'), pfOk = document.getElementById('pfOk');
@@ -1151,7 +1266,7 @@ body { margin: 0; }
   showPage(location.hash.slice(1));
   if (!profile) openProfile(true);
 
-  // ---- 픽셀 토끼 (꼬물꼬물 + 하트) ----
+  // ---- 픽셀 캐릭터: 토끼(꼬물꼬물) / 네잎클로버(흔들흔들) + 하트 ----
   (function () {
     const cvb = document.getElementById('bunny'), g = cvb.getContext('2d');
     const GW = 32, GH = 30, P = 4, dpr = window.devicePixelRatio || 1;
@@ -1166,6 +1281,54 @@ body { margin: 0; }
     function spawn() { hearts.push({ x: 20 + Math.random() * 5, y: 6, life: 0, ph: Math.random() * 6 }); }
 
     function render() {
+      g.clearRect(0, 0, GW * P, GH * P);
+      if (character === 'clover') renderClover(); else renderBunny();
+      drawHearts();
+    }
+
+    // 네잎클로버: 줄기 아래를 축으로 좌우로 흔들흔들
+    function renderClover() {
+      const sway = Math.sin(t * 0.18) * 2.2;                     // 꼭대기 기준 최대 흔들림(칸)
+      const lean = y => Math.round(sway * (27 - y) / 20);          // 아래로 갈수록 덜 흔들림
+      const blink = (t % 41) < 2;
+      const CX = 16, CY = 11;                                      // 네 잎이 만나는 가운데
+      const leaves = [[-4.3, -4.1], [4.3, -4.1], [-4.3, 4.1], [4.3, 4.1]];
+      // 잎 하나 = 동그라미 두 개를 붙인 하트 모양
+      const leaf = (x, y) => leaves.some(([dx, dy]) => {
+        const cx = CX + dx + lean(y), cy = CY + dy;
+        const sx = Math.sign(dx), sy = Math.sign(dy);
+        return ell(x, y, cx - sx * 1.1, cy + sy * 0.9, 2.9, 2.9) || ell(x, y, cx + sx * 0.9, cy - sy * 1.1, 2.9, 2.9);
+      });
+      const cross = (x, y) => (x === CX + lean(y) && Math.abs(y - CY) <= 7) || (y === CY && Math.abs(x - CX - lean(y)) <= 7);
+      const stem = (x, y) => y > CY && y <= 27 && x === CX + lean(y) + (y >= 24 ? -1 : 0);
+      const px = (x, y, c) => { g.fillStyle = c; g.fillRect(x * P, y * P, P, P); };
+      const C = { o: '#3f7d4a', l: '#7cc47f', hl: '#b6e3a8', st: '#4e9a57', e: '#2b1d2a', b: '#f7a8c4' };
+      const isLeaf = (x, y) => leaf(x, y) && !cross(x, y);
+      for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+        if (isLeaf(x, y)) {
+          let c = C.l;
+          leaves.forEach(([dx, dy]) => { if (ell(x, y, CX + dx + lean(y) - 1.2, CY + dy - 1.4, 1.3, 1.1)) c = C.hl; });
+          px(x, y, c);
+        } else if (leaf(x, y) || isLeaf(x - 1, y) || isLeaf(x + 1, y) || isLeaf(x, y - 1) || isLeaf(x, y + 1)) {
+          px(x, y, C.o);                                           // 테두리 + 잎 사이 경계선
+        } else if (stem(x, y)) {
+          px(x, y, C.st);
+        } else if (y === 28 && x > 9 && x < 23) {
+          px(x, y, COL.g);
+        }
+      }
+      // 가운데 동그란 얼굴
+      const fx = CX + lean(CY);
+      for (let y = CY - 2; y <= CY + 2; y++) for (let x = fx - 3; x <= fx + 3; x++) {
+        if (ell(x, y, fx + .5, CY + .5, 3.4, 2.6)) px(x, y, C.l);
+      }
+      if (blink) { px(fx - 2, CY, C.e); px(fx + 2, CY, C.e); }
+      else { px(fx - 2, CY - 1, C.e); px(fx - 2, CY, C.e); px(fx + 2, CY - 1, C.e); px(fx + 2, CY, C.e); }
+      px(fx - 3, CY + 1, C.b); px(fx + 3, CY + 1, C.b);
+      px(fx, CY + 1, C.e);
+    }
+
+    function renderBunny() {
       const br = Math.sin(t * 0.5);                 // 숨쉬기
       const rx = 12.6 - br * 0.6, ry = 7.4 + br * 0.8;
       const bob = br > 0.2 ? 0 : 1;                 // 머리 끄덕
@@ -1181,7 +1344,6 @@ body { margin: 0; }
       const pinkR = (x, y) => ell(x, y, 16.2 + sw, 7.2 + bob, .9, 3.6);
       const ins = (x, y) => x >= 0 && y >= 0 && x < GW && y < GH && (body(x, y) || head(x, y) || earL(x, y) || earR(x, y));
 
-      g.clearRect(0, 0, GW * P, GH * P);
       const px = (x, y, c) => { g.fillStyle = c; g.fillRect(x * P, y * P, P, P); };
       for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
         if (ins(x, y)) {
@@ -1209,7 +1371,10 @@ body { margin: 0; }
       const nx = 12 + sw, ny = ey + 3;
       if (wig) { px(nx, ny, COL.n); px(nx + 1, ny, COL.n); px(nx, ny + 1, COL.n); }
       else { px(nx - 1, ny, COL.n); px(nx + 1, ny, COL.n); px(nx, ny + 1, COL.n); }
-      // 하트
+    }
+
+    function drawHearts() {
+      const px = (x, y, c) => { g.fillStyle = c; g.fillRect(x * P, y * P, P, P); };
       hearts.forEach(h => {
         const a = h.life > 14 ? Math.max(0, 1 - (h.life - 14) / 8) : 1;
         g.globalAlpha = a;
@@ -1221,6 +1386,7 @@ body { margin: 0; }
       });
     }
 
+    drawCharacter = render;
     if (reduce) { hearts.push({ x: 21, y: 2, life: 0, ph: 0 }); render(); return; }
     setInterval(() => {
       t++;
@@ -1232,6 +1398,8 @@ body { margin: 0; }
     cvb.addEventListener('click', () => { spawn(); spawn(); spawn(); });
     render();
   })();
+
+  applyTheme();
 
   // ---- 눈 내리는 배경 ----
   const cv = document.getElementById('snow');
