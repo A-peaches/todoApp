@@ -7,6 +7,13 @@
 - 날씨: 브라우저 위치 → Open-Meteo API (키 없음), 1시간 캐시
 - 로컬 실행: `python3 -m http.server 8080` → http://localhost:8080/princess-todo.html
 
+## 알림 / 푸시
+- 문구: `notify.js` (앱과 `sw.js`가 같이 씀). 서버는 { slot, weather }만 보내고 이름·남은 할 일은 폰에서 붙임
+- 서버: `push-server/` (Cloudflare Workers, KV `SUBS`, 매시 정각 cron) → https://princess-todo-push.bbhtodo.workers.dev
+  - 배포: `cd push-server && ./wr deploy` (`wr` = Node 22로 wrangler 실행)
+  - VAPID 비밀 키는 `push-server/.vapid.json`(git 제외) + Cloudflare secret `VAPID_PRIVATE_KEY`
+- 공개 주소(GitHub Pages): https://a-peaches.github.io/todoApp/princess-todo.html
+
 ## Git 규칙
 - 요청 하나를 끝낼 때마다 바로 커밋한다. 커밋 메시지는 한국어로, 무엇을 바꿨는지 한 줄 요약.
 - 커밋 후 바로 `git push` 해서 GitHub(https://github.com/A-peaches/todoApp)에 올린다.

@@ -1,0 +1,19 @@
+name = "princess-todo-push"
+main = "src/index.js"
+workers_dev = true
+preview_urls = false
+compatibility_date = "2026-10-01"
+
+# 매시 정각에 실행 (구독자 시간대 기준 7·12·18·21·23시인지 코드에서 판단)
+[triggers]
+crons = ["0 * * * *"]
+
+# 구독 저장소. id는 `wrangler kv namespace create SUBS` 결과로 채움
+[[kv_namespaces]]
+binding = "SUBS"
+id = "3a1ac0ae370c405dbb5bdfa20d956276"
+
+[vars]
+VAPID_SUBJECT = "https://a-peaches.github.io/todoApp/"   # 푸시 서비스에 알리는 연락처(앱 주소)
+VAPID_PUBLIC_KEY = "BAIlPVFp_780lMELmtdgFzZCcEbL9XOCrki5I4M2x_v6tk49QKnRCtSAgII-gpvKr1ZQX9MXCnVG5XWdufn2_LA"
+# VAPID_PRIVATE_KEY 는 비밀값이라 여기 두지 않고 `wrangler secret put VAPID_PRIVATE_KEY` 로 등록
