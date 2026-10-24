@@ -11,6 +11,9 @@
   db.version(2).stores({
     diaries: 'date'      // { date: 'YYYY-MM-DD', text, createdAt, updatedAt }  하루에 일기 하나
   });
+  db.version(3).stores({
+    settings: 'key'      // { key: 'profile', name, birth: 'YYYY-MM-DD' }
+  });
 
   const newId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
     : Date.now().toString(36) + Math.random().toString(36).slice(2);
@@ -53,6 +56,11 @@
         await db.diaries.put({ date, text, createdAt: old ? old.createdAt : at, updatedAt: at });
       },
       remove: date => db.diaries.delete(date)
+    },
+
+    profile: {
+      get: () => db.settings.get('profile'),   // 없으면 undefined → 처음 켠 사용자
+      set: (name, birth) => db.settings.put({ key: 'profile', name, birth })
     },
 
     cache: {
