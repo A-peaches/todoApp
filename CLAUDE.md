@@ -15,5 +15,7 @@
 - 공개 주소(GitHub Pages): https://a-peaches.github.io/todoApp/princess-todo.html
 
 ## Git 규칙
+- 로컬 `princess-todo.html`에는 커밋하지 않는 임시 변경이 있음: `getPosition`을 서울 좌표로 고정한 한 줄(주석 "임시: 서울 날씨 고정").
+  커밋할 때는 이 줄만 원래 위치 권한 코드(navigator.geolocation)로 되돌린 내용으로 스테이징할 것.
 - 요청 하나를 끝낼 때마다 바로 커밋한다. 커밋 메시지는 한국어로, 무엇을 바꿨는지 한 줄 요약.
 - 커밋 후 바로 `git push` 해서 GitHub(https://github.com/A-peaches/todoApp)에 올린다.
