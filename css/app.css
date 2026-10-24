@@ -205,6 +205,9 @@ body {
 .pcal .fc-col-header-cell.sun .fc-col-header-cell-cushion { color: var(--rose); }
 .pcal .fc-col-header-cell.sat .fc-col-header-cell-cushion { color: var(--cool); }
 .pcal td.fc-daygrid-day { padding: 3px 2px; }
+#calendar td.fc-daygrid-day { cursor: pointer; }
+#calendar td.fc-daygrid-day:active .fc-daygrid-day-frame { transform: scale(.94); }
+#calendar td.fc-daygrid-day:focus-visible { outline: 2px solid var(--gold); outline-offset: -1px; border-radius: 14px; }
 .pcal .fc-daygrid-day-frame {
   min-height: 0; padding: 7px 0 6px; border-radius: 14px; background: var(--tile);
   box-shadow: inset 0 0 0 1px var(--rose-soft);

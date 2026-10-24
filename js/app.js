@@ -191,7 +191,13 @@
       },
       dayCellDidMount: arg => {
         const c = counts[iso(arg.date)] || 0;
-        arg.el.setAttribute('aria-label', (arg.date.getMonth() + 1) + '월 ' + arg.date.getDate() + '일, 할 일 ' + c + '개');
+        arg.el.setAttribute('aria-label', (arg.date.getMonth() + 1) + '월 ' + arg.date.getDate() + '일, 할 일 ' + c + '개, 누르면 할 일 등록으로');
+        // 날짜를 누르면 그 날짜를 고른 채로 할 일 등록 화면으로
+        const k = iso(arg.date), go = () => openAddFor(k);
+        arg.el.tabIndex = 0;
+        arg.el.setAttribute('role', 'button');
+        arg.el.addEventListener('click', go);
+        arg.el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
       }
     });
     calendar.render();
@@ -311,11 +317,17 @@
     });
   }
   function selectDate(k) { selected = k; markSelected(); renderDay(); }
+  // 홈 2주 달력에서 날짜를 누르면: 그 날짜 선택 + 그 달 보이게 + 할 일 등록 화면으로
+  function openAddFor(k) {
+    selected = k;
+    if (monthCal) monthCal.gotoDate(fromIso(k));
+    location.hash = 'add';
+  }
 
   function renderMonth() {
     const counts = {};
     todos.forEach(t => { counts[t.date] = (counts[t.date] || 0) + 1; });
-    const shown = monthCal ? monthCal.getDate() : now;
+    const shown = monthCal ? monthCal.getDate() : fromIso(selected);
     if (monthCal) monthCal.destroy();
     monthCal = new FullCalendar.Calendar(document.getElementById('monthCal'), {
       initialView: 'dayGridMonth',
