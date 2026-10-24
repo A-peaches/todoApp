@@ -68,6 +68,12 @@
       set: prefs => db.settings.put({ key: 'prefs', theme: prefs.theme, character: prefs.character, notify: !!prefs.notify })
     },
 
+    background: {   // 사용자가 고른 배경 사진 (줄인 JPEG Blob). 없으면 기본 배경
+      async get() { const b = await db.settings.get('background'); return b ? b.blob : null; },
+      set: blob => db.settings.put({ key: 'background', blob }),
+      clear: () => db.settings.delete('background')
+    },
+
     cache: {
       get: key => db.cache.get(key),
       set: (key, value) => db.cache.put({ key, value, savedAt: Date.now() })

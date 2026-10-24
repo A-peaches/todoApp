@@ -61,6 +61,11 @@ body {
   font-size: 13px;
   word-break: keep-all;
 }
+/* 사용자 배경 사진: 화면을 꽉 채우고, 글씨가 잘 보이게 테마 색으로 살짝 덮음 */
+#bgPhoto { position: fixed; inset: 0; z-index: 0; background: center / cover no-repeat; pointer-events: none; }
+#bgPhoto::after { content: ""; position: absolute; inset: 0; background: var(--veil); }
+#bgPhoto[hidden] { display: none; }
+:root { --veil: rgba(255, 255, 255, .22); }
 #snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
 .app {
   position: relative; z-index: 1;
@@ -107,6 +112,7 @@ body {
   --frost: rgba(255, 255, 255, .9);
 }
 :root[data-theme="black"] {
+  --veil: rgba(0, 0, 0, .38);
   color-scheme: dark;
   --blush: #17151b; --sky: #1f1c24; --lilac: #25212b;
   --rose: #d9b469; --rose-rgb: 217, 180, 105; --rose-hi: #ecd395; --rose-soft: #3a3440; --rose-soft-rgb: 58, 52, 64;
@@ -338,6 +344,9 @@ body {
 .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
 .swatch { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 7px 0 6px; font-size: 11px; font-weight: 400; }
 .swatch i { width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.12), inset 0 0 0 3px rgba(255,255,255,.55); }
+.bg-opt { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.bg-thumb { width: 20px; height: 20px; border-radius: 6px; background: center / cover no-repeat; box-shadow: 0 0 0 1px var(--rose-soft); }
+.bg-thumb[hidden] { display: none; }
 .swatch[aria-checked="true"] { color: var(--rose); font-weight: 700; background: var(--surface); box-shadow: 0 0 0 2px var(--rose); }
 .char-opt:focus-visible, .swatch:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 #page-settings { gap: 10px; min-height: 0; overflow-y: auto; }   /* 설정은 내용이 화면보다 길면 안에서 스크롤 */
@@ -477,6 +486,7 @@ body { margin: 0; }
 </style>
 
 <div id="phone">
+<div id="bgPhoto" aria-hidden="true" hidden></div>
 <canvas id="snow" aria-hidden="true"></canvas>
 
 <div class="app page" id="page-home">
@@ -689,6 +699,12 @@ body { margin: 0; }
     </div>
     <div class="opt-label">색상</div>
     <div class="swatches" role="radiogroup" aria-label="색상" id="swatches"></div>
+    <div class="opt-label">배경</div>
+    <div class="char-opts" role="radiogroup" aria-label="배경">
+      <button type="button" class="char-opt bg-opt" id="bgPick" role="radio"><span class="bg-thumb" id="bgThumb" hidden></span>내 사진으로</button>
+      <button type="button" class="char-opt" id="bgDefault" role="radio">기본 배경</button>
+    </div>
+    <input type="file" id="bgFile" accept="image/*" hidden>
   </section>
 </div>
 
@@ -1240,7 +1256,7 @@ body { margin: 0; }
     showHearts(Number(heartCount.textContent) || 0);
     document.querySelector('.bunny-wrap').setAttribute('aria-label', CHAR_LABEL[character]);
     if (drawCharacter) drawCharacter();
-    document.querySelectorAll('.char-opt').forEach(b => b.setAttribute('aria-checked', b.dataset.char === character));
+    document.querySelectorAll('.char-opt[data-char]').forEach(b => b.setAttribute('aria-checked', b.dataset.char === character));
     document.querySelectorAll('.swatch').forEach(b => b.setAttribute('aria-checked', b.dataset.theme === prefs.theme));
     updateFavicon();
     renderBell();
@@ -1254,8 +1270,48 @@ body { margin: 0; }
     applyTheme();
     renderCal();   // 달력 오늘 칸 등 색 다시
   }
-  document.querySelectorAll('.char-opt').forEach(b => b.addEventListener('click', () => setPref('character', b.dataset.char)));
+  document.querySelectorAll('.char-opt[data-char]').forEach(b => b.addEventListener('click', () => setPref('character', b.dataset.char)));
   document.querySelectorAll('.swatch').forEach(b => b.addEventListener('click', () => setPref('theme', b.dataset.theme)));
+
+  // ---- 배경 사진: 사용자가 고른 사진을 줄여서 폰 안 DB에 저장, 눈 효과는 그 위에 그대로 ----
+  const bgPhoto = document.getElementById('bgPhoto'), bgThumb = document.getElementById('bgThumb');
+  let bgUrl = null;
+  function showBackground(blob) {
+    if (bgUrl) URL.revokeObjectURL(bgUrl);
+    bgUrl = blob ? URL.createObjectURL(blob) : null;
+    bgPhoto.hidden = bgThumb.hidden = !bgUrl;
+    bgPhoto.style.backgroundImage = bgThumb.style.backgroundImage = bgUrl ? 'url("' + bgUrl + '")' : '';
+    document.getElementById('bgPick').setAttribute('aria-checked', !!bgUrl);
+    document.getElementById('bgDefault').setAttribute('aria-checked', !bgUrl);
+  }
+  // 큰 사진은 긴 변 1600px JPEG로 줄여서 저장 (폰 저장 공간 아끼기)
+  async function shrinkImage(file) {
+    const img = await createImageBitmap(file);
+    const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.85));
+  }
+  const bgFile = document.getElementById('bgFile');
+  document.getElementById('bgPick').addEventListener('click', () => bgFile.click());
+  bgFile.addEventListener('change', async () => {
+    const file = bgFile.files && bgFile.files[0];
+    bgFile.value = '';
+    if (!file) return;
+    try {
+      const blob = await shrinkImage(file);
+      await PrincessDB.background.set(blob);
+      showBackground(blob);
+      showToast('배경을 바꿨어요 ・₊✧');
+    } catch (e) { showToast('이 사진은 불러올 수 없어요'); }
+  });
+  document.getElementById('bgDefault').addEventListener('click', async () => {
+    await PrincessDB.background.clear();
+    showBackground(null);
+    showToast('기본 배경으로 돌아왔어요');
+  });
+  showBackground(await PrincessDB.background.get());
 
   // ---- 알림: 7시 날씨 / 12시 점심 / 18시 하루 마무리 / 21시 내일 날씨 / 23시 굿나잇 ----
   // 1) 푸시 서버(push-server/, Cloudflare Workers)가 정각마다 보내면 앱을 닫아도 와요.
