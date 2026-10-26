@@ -6,7 +6,7 @@ importScripts('notify.js');
 
 // ---- 오프라인: 앱 파일과 라이브러리를 폰에 저장해 두고, 인터넷이 없으면 저장본으로 열기 ----
 // 앱 파일은 '인터넷 먼저'(새 버전 바로 반영), 라이브러리·글꼴은 '저장본 먼저'(버전 고정이라 안 바뀜)
-const CACHE = 'todo-offline-v16';
+const CACHE = 'todo-offline-v17';
 const APP_FILES = ['./princess-todo.html', './css/app.css', './js/app.js', './db.js', './notify.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/badge-96.png',
   './icons/icon-maskable-192.png', './icons/icon-maskable-512.png', './icons/splash-192.png', './icons/splash-512.png'];

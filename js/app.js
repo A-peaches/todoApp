@@ -19,7 +19,7 @@
 
   // ---- 헤더 ----
   document.getElementById('today').textContent = now.getFullYear() + '. ' + pad(now.getMonth() + 1) + '. ' + pad(now.getDate()) + '.';
-  document.getElementById('enDay').textContent = EN_DAYS[now.getDay()] + ', full of joy in my palace';
+  document.getElementById('enDay').textContent = EN_DAYS[now.getDay()] + ', full of joy in my life';
 
   // ---- 이번 주 할 일 ----
   const weekEnd = iso(addDays(now, 6));
