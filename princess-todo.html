@@ -36,6 +36,7 @@
       <div class="date" id="today">2026. 10. 24.</div>
       <div class="en-sub" id="enDay">Saturday, full of joy in my palace</div>
     </div>
+    <button type="button" class="home-bell" id="homeBell" aria-label="지난 알림 보기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="dot" id="noticeDot" hidden></span></button>
   </header>
 
   <section class="top">
@@ -256,6 +257,7 @@
     <div class="avatar" role="img" aria-label="프로필 사진: 토끼"><canvas id="avatar" width="128" height="120" aria-hidden="true"></canvas></div>
     <div class="profile-name" id="profileName"></div>
     <div class="profile-birth" id="profileBirth"></div>
+    <div class="push-status" id="pushStatus" aria-live="polite"></div>
     <button type="button" class="diary-btn" id="profileEdit">프로필 수정</button>
   </section>
 
@@ -289,6 +291,19 @@
     <input type="file" id="backupFile" accept="application/json,.json" hidden>
   </section>
 </div>
+
+<dialog class="add-dialog notice-dialog" id="noticeDialog" aria-labelledby="noticeTitle">
+  <form method="dialog">
+    <div class="tab" aria-hidden="true"><svg viewBox="0 0 22 14"><path d="M11 13 C3 8 2 4 4.5 2 C7 0 10 2 11 4 C12 2 15 0 17.5 2 C20 4 19 8 11 13Z" fill="#fff"/></svg></div>
+    <div class="title-en" id="noticeTitle">Notifications</div>
+    <div class="dlg-date">지난 알림을 모아 봤어요</div>
+    <ul class="notice-list" id="noticeList"></ul>
+    <div class="dlg-actions">
+      <button type="button" class="cancel" id="noticeClear">모두 지우기</button>
+      <button type="button" class="ok" id="noticeClose">닫기</button>
+    </div>
+  </form>
+</dialog>
 
 <dialog class="add-dialog" id="permDialog" aria-labelledby="permTitle">
   <form method="dialog">

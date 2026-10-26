@@ -93,14 +93,14 @@
     '힘들면 힘들다고 말해도 괜찮아요', '오늘 어떤 기분이든 다 괜찮아요', '지금 그대로도 충분히 소중해요',
     // 칭찬
     '어제도 정말 수고 많았어요', '지금까지 온 것만으로도 대단해요', '이렇게 꾸준한 사람 흔치 않아요',
-    '그 성실함에 궁전이 감동했어요', '생각보다 훨씬 잘하고 있어요', '포기하지 않는 모습, 정말 멋져요',
+    '그 꾸준함이 정말 대단해요', '생각보다 훨씬 잘하고 있어요', '포기하지 않는 모습, 정말 멋져요',
     '오늘도 일어났으니 이미 1승이에요', '계획을 세운 것부터 대단해요', '조금씩 자라고 있는 게 보여요',
     '자신을 제일 잘 아는 건 바로 당신이에요', '실수해도 괜찮아요, 배우는 중이니까요', '어제보다 오늘 더 빛나요',
-    // 공주 & 궁전
-    '왕관은 쓰는 사람이 빛내는 거예요', '궁전의 하루가 시작됐어요', '오늘도 우아하게, 하지만 당당하게요',
-    '오늘 일정표에 행복 한 칸 추가해 둘게요', '궁전의 평화는 당신 컨디션에 달렸어요', '드레스 대신 용기를 입고 출발해요',
-    '오늘의 미션은 즐겁게 하기예요', '눈의 궁전에서도 마음은 따뜻하게요', '쉬는 날에도 당신은 여전히 공주님이에요',
-    '토끼가 깡총깡총 응원하고 있어요', '마법 같은 하루가 기다리고 있어요', '반짝이는 건 왕관이 아니라 당신이에요',
+    // 하루를 여는 응원
+    '오늘도 당당하게, 나답게 가 봐요', '새로운 하루가 시작됐어요, 반가워요', '오늘도 차분하게, 하지만 씩씩하게요',
+    '오늘 일정표에 행복 한 칸 추가해 둘게요', '컨디션 챙기는 것도 중요한 일이에요', '걱정 대신 용기를 챙겨서 출발해요',
+    '오늘의 미션은 즐겁게 하기예요', '날이 추워도 마음은 따뜻하게요', '쉬는 날엔 마음껏 쉬어도 괜찮아요',
+    '작은 응원을 보내요, 오늘도 화이팅', '기분 좋은 일이 기다리고 있을 거예요', '오늘 제일 빛나는 건 바로 당신이에요',
     // 작은 행복
     '오늘 맛있는 거 하나는 꼭 먹어요', '좋은 일이 생길 것 같은 예감이 들어요', '하늘 한 번 올려다봐요, 예쁠 거예요',
     '오늘 웃을 일 세 개만 찾아봐요', '좋아하는 사람에게 안부 한 줄 보내 봐요', '작은 행복이 모여 큰 하루가 돼요',
@@ -757,7 +757,9 @@
   }
   async function sendNotification(body, tag) {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    const opts = { body, tag, icon: 'icons/icon-192.png', badge: 'icons/badge-96.png' };   // 배지는 상단바용 흰 TO/DO
+    const opts = { body, tag, icon: 'icons/icon-192.png', badge: 'icons/badge-96.png' };
+    const slot = tag && /^todo-\d+$/.test(tag) ? Number(tag.slice(5)) : null;
+    PrincessDB.notices.add({ slot, body }).then(updateNoticeDot).catch(() => {});   // 배지는 상단바용 흰 TO/DO
     try { if (swReg) { await swReg.showNotification('₊‧Todo‧₊', opts); return; } } catch (e) {}
     try { new Notification('₊‧Todo‧₊', opts); } catch (e) {}
   }
@@ -767,12 +769,19 @@
     const s = atob((b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/'));
     return Uint8Array.from(s, c => c.charCodeAt(0));
   };
-  async function enablePush() {
-    const reg = await swReady;
-    if (!PUSH.server || !reg || !('PushManager' in window)) return false;
+  // 1) 구독 만들기: 아이폰은 '버튼을 누른 그 순간'에만 만들 수 있어서, 권한 요청 바로 다음에 부름
+  async function subscribeNow() {
+    const reg = swReg || await swReady;
+    if (!PUSH.server || !reg || !('PushManager' in window)) return null;
     try {
-      const sub = (await reg.pushManager.getSubscription()) ||
+      return (await reg.pushManager.getSubscription()) ||
         (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(PUSH.vapidPublicKey) }));
+    } catch (e) { return null; }
+  }
+  // 2) 서버에 등록: 구독 + 대략 위치 + 시간대
+  async function registerPush(sub) {
+    if (!sub) return false;
+    try {
       const pos = await getPosition().catch(() => null);
       const round = x => Math.round(x * 100) / 100;
       const res = await fetch(PUSH.server + '/subscribe', {
@@ -793,9 +802,11 @@
     if (PUSH.server) fetch(PUSH.server + '/unsubscribe', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {});
     await sub.unsubscribe().catch(() => {});
   }
-  // 앱을 열 때마다 구독을 서버에 다시 알려서 위치·시간대를 최신으로
-  async function refreshPush() {
-    pushActive = !!prefs.notify && 'Notification' in window && Notification.permission === 'granted' && await enablePush();
+  // 앱을 열 때마다(또는 방금 만든 구독으로) 서버에 다시 알려서 위치·시간대를 최신으로
+  async function refreshPush(sub) {
+    const allowed = !!prefs.notify && 'Notification' in window && Notification.permission === 'granted';
+    pushActive = allowed && await registerPush(sub || await subscribeNow());
+    renderBell();
     scheduleNotify();
   }
 
@@ -824,28 +835,75 @@
 
   // 설정의 종 버튼: 켜면 알림 권한 요청 → 푸시 구독 → 확인 알림
   const bell = document.getElementById('bellBtn');
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   function renderBell() {
     const on = !!prefs.notify && 'Notification' in window && Notification.permission === 'granted';
     bell.classList.toggle('on', on);
+    bell.classList.toggle('weak', on && !pushActive);
     bell.setAttribute('aria-pressed', on);
-    bell.setAttribute('aria-label', on ? '알림 켜짐, 누르면 꺼요' : '알림 꺼짐, 누르면 켜요');
+    bell.setAttribute('aria-label', !on ? '알림 꺼짐, 누르면 켜요' : pushActive ? '알림 켜짐, 누르면 꺼요' : '알림이 앱 열려 있을 때만 와요, 누르면 다시 연결해요');
+    // 지금 알림이 어떻게 오는지 한 줄로 (문의 받을 때 이 문구로 확인)
+    const st = document.getElementById('pushStatus');
+    st.textContent = !('Notification' in window)
+      ? (isIOS && !standalone ? '아이폰은 홈 화면에 추가한 앱에서 알림을 켤 수 있어요' : '이 브라우저는 알림을 지원하지 않아요')
+      : !on ? '알림 꺼짐 · 종을 누르면 켜져요'
+      : pushActive ? '알림 켜짐 · 앱을 닫아도 와요 ・₊✧'
+      : '지금은 앱이 열려 있을 때만 와요 · 종을 눌러 다시 연결해 주세요';
+    st.classList.toggle('warn', on && !pushActive);
   }
   bell.addEventListener('click', async () => {
-    if (bell.classList.contains('on')) {
-      await setPref('notify', false); disablePush(); pushActive = false;
+    const on = bell.classList.contains('on');
+    if (on && !pushActive) {   // 켜져 있지만 푸시 연결이 안 된 상태 → 누른 김에 다시 연결
+      await refreshPush(await subscribeNow());
+      showToast(pushActive ? '다시 연결했어요 ・₊✧ 앱을 닫아도 찾아올게요' : '연결하지 못했어요. 인터넷을 확인하고 다시 눌러 주세요');
+      return;
+    }
+    if (on) {
+      await setPref('notify', false); disablePush(); pushActive = false; renderBell();
       showToast('알림을 껐어요'); return;
     }
-    if (!('Notification' in window)) { showToast('이 브라우저는 알림을 지원하지 않아요. 아이폰은 홈 화면에 추가한 앱에서 켜 주세요'); return; }
+    if (!('Notification' in window)) { showToast(isIOS ? '아이폰은 홈 화면에 추가한 앱에서 알림을 켤 수 있어요' : '이 브라우저는 알림을 지원하지 않아요'); return; }
     const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
     if (perm !== 'granted') { showToast('브라우저 설정에서 알림을 허용해 주세요'); renderBell(); return; }
+    const sub = await subscribeNow();   // 권한 바로 다음, 다른 일 하기 전에
     await setPref('notify', true);
-    await refreshPush();
+    await refreshPush(sub);
     showToast(pushActive ? '알림을 켰어요 ・₊✧ 앱을 닫아도 찾아올게요' : '알림을 켰어요 ・₊✧ (앱이 열려 있을 때만 와요)');
     if (pushActive) {   // 확인 알림을 푸시 서버를 거쳐 보내서 연결까지 확인
       const sub = await swReg.pushManager.getSubscription();
       fetch(PUSH.server + '/test', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {});
     } else sendNotification('알림을 켰어요 ・₊✧ 매일 7시·12시·18시·21시·23시에 찾아올게요', 'todo-on');
   });
+
+  // ---- 홈 오른쪽 위 종: 지난 알림 내역 (새 알림이 있으면 빨간 점) ----
+  const noticeDlg = document.getElementById('noticeDialog'), noticeDot = document.getElementById('noticeDot');
+  const NOTICE_LABEL = { 7: '아침 날씨', 12: '점심', 18: '저녁', 21: '내일 날씨', 23: '굿나잇' };
+  async function updateNoticeDot() {
+    const [last, seen] = await Promise.all([PrincessDB.notices.lastAt(), PrincessDB.cache.get('notices-seen')]);
+    noticeDot.hidden = !(last && last > (seen ? seen.value : 0));
+  }
+  async function openNotices() {
+    await PrincessDB.notices.prune();
+    const list = await PrincessDB.notices.latest();
+    const fmt = t => { const d = new Date(t); return pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+    document.getElementById('noticeList').innerHTML = list.length ? list.map(n =>
+      '<li><span class="when">' + fmt(n.at) + (NOTICE_LABEL[n.slot] ? ' · ' + NOTICE_LABEL[n.slot] : '') + '</span><span class="msg">' + esc(n.body) + '</span></li>'
+    ).join('') : '<li class="notice-empty">아직 받은 알림이 없어요 ・₊✧</li>';
+    noticeDlg.showModal();
+    await PrincessDB.cache.set('notices-seen', Date.now());
+    noticeDot.hidden = true;
+  }
+  document.getElementById('homeBell').addEventListener('click', openNotices);
+  document.getElementById('noticeClose').addEventListener('click', () => noticeDlg.close());
+  document.getElementById('noticeClear').addEventListener('click', async () => {
+    await PrincessDB.notices.clear();
+    document.getElementById('noticeList').innerHTML = '<li class="notice-empty">아직 받은 알림이 없어요 ・₊✧</li>';
+  });
+  noticeDlg.addEventListener('click', e => { if (e.target === noticeDlg) noticeDlg.close(); });
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'notice') updateNoticeDot(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) updateNoticeDot(); });
+  updateNoticeDot();
 
   // ---- 사이트 아이콘: 투명 배경에 TO / DO, 고른 테마 색으로 ----
   let faviconUrl = '';
@@ -913,9 +971,10 @@
     // 알림 권한 요청은 버튼을 누른 그 순간에 바로 (브라우저 규칙)
     const notifReq = canNotify && Notification.permission === 'default' ? Notification.requestPermission() : Promise.resolve(canNotify ? Notification.permission : 'unsupported');
     permDlg.close();
-    await markAsked();
     const perm = await notifReq;
-    if (perm === 'granted') { await setPref('notify', true); await refreshPush(); }
+    const sub = perm === 'granted' ? await subscribeNow() : null;   // 권한 바로 다음에 구독 (아이폰 규칙)
+    await markAsked();
+    if (perm === 'granted') { await setPref('notify', true); await refreshPush(sub); }
     // 위치: 허용하면 그 위치 날씨로 바로 바꿈
     try { paintWeather(await fetchWeather()); } catch (e) {}
     showToast(perm === 'granted' ? '알림을 켰어요 ・₊✧ 매일 7·12·18·21·23시에 찾아올게요' : '설정의 종으로 언제든 알림을 켤 수 있어요');

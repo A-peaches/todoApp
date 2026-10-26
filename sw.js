@@ -6,7 +6,7 @@ importScripts('notify.js');
 
 // ---- 오프라인: 앱 파일과 라이브러리를 폰에 저장해 두고, 인터넷이 없으면 저장본으로 열기 ----
 // 앱 파일은 '인터넷 먼저'(새 버전 바로 반영), 라이브러리·글꼴은 '저장본 먼저'(버전 고정이라 안 바뀜)
-const CACHE = 'todo-offline-v15';
+const CACHE = 'todo-offline-v16';
 const APP_FILES = ['./princess-todo.html', './css/app.css', './js/app.js', './db.js', './notify.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/badge-96.png',
   './icons/icon-maskable-192.png', './icons/icon-maskable-512.png', './icons/splash-192.png', './icons/splash-512.png'];
@@ -49,6 +49,21 @@ self.addEventListener('notificationclick', e => {
   }));
 });
 
+// 받은 알림을 내역(notices)에 저장. 앱이 새 버전(DB 4)으로 한 번 열려 저장소가 생긴 뒤부터 쌓여요
+function saveNotice(n) {
+  return new Promise(resolve => {
+    const req = indexedDB.open('princessTodo');
+    req.onerror = () => resolve();
+    req.onsuccess = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('notices')) { db.close(); resolve(); return; }
+      const tx = db.transaction('notices', 'readwrite');
+      tx.objectStore('notices').add({ at: Date.now(), ...n });
+      tx.oncomplete = tx.onerror = () => { db.close(); resolve(); };
+    };
+  });
+}
+
 // 앱의 IndexedDB(Dexie가 만든 princessTodo)에서 직접 읽기
 function readLocal() {
   return new Promise(resolve => {
@@ -82,6 +97,9 @@ self.addEventListener('push', e => {
       const left = (local.todos || []).filter(t => t.date === today && !t.done).length;
       body = self.TodoNotify.buildMessage(d.slot, { name: local.profile && local.profile.name, weather: d.weather, left });
     }
+    await saveNotice({ slot: d.slot || null, body: body || '' });
+    // 열려 있는 앱이 있으면 종에 빨간 점 다시 그리게
+    (await self.clients.matchAll({ type: 'window' })).forEach(c => c.postMessage({ type: 'notice' }));
     await self.registration.showNotification(d.title || '₊‧Todo‧₊', {
       body: body || '', tag: d.slot ? 'todo-' + d.slot : d.tag, icon: 'icons/icon-192.png',
       badge: 'icons/badge-96.png'   // 안드로이드 상단바: 투명 배경 흰 TO/DO (꽉 찬 아이콘은 흰 네모로 보임)

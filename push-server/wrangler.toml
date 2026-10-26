@@ -4,6 +4,10 @@ workers_dev = true
 preview_urls = false
 compatibility_date = "2026-10-01"
 
+# 실행 기록(로그)을 Cloudflare 대시보드에서 볼 수 있게
+[observability]
+enabled = true
+
 # 매시 정각에 실행 (구독자 시간대 기준 7·12·18·21·23시인지 코드에서 판단)
 [triggers]
 crons = ["0 * * * *"]

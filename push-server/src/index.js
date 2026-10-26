@@ -65,10 +65,16 @@ async function runSchedule(env) {
         if (!weatherCache.has(wk)) weatherCache.set(wk, await weatherFor(rec.lat, rec.lon, rec.tz));
         weather = weatherCache.get(wk);
       }
+      // 보낸 결과를 구독 기록에 남김 (알림이 안 온다는 문의를 확인할 때 씀)
+      let status = 0, error = null;
       try {
         const res = await send(env, rec, { slot, weather });
-        if (res.status === 404 || res.status === 410) await env.SUBS.delete(name);   // 만료된 구독 정리
-      } catch (e) { console.log('push failed', e && e.message); }
+        status = res.status;
+        if (!res.ok) error = (await res.text()).slice(0, 200);
+      } catch (e) { error = String(e && e.message || e).slice(0, 200); }
+      console.log('push', slot, rec.subscription.endpoint.split('/')[2], status, error || '');
+      if (status === 404 || status === 410) await env.SUBS.delete(name);   // 만료된 구독 정리
+      else await env.SUBS.put(name, JSON.stringify({ ...rec, last: { slot, status, error, at: Date.now() } }));
     }
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);

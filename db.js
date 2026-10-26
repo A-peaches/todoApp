@@ -14,6 +14,9 @@
   db.version(3).stores({
     settings: 'key'      // { key: 'profile', name, birth: 'YYYY-MM-DD' } / { key: 'prefs', theme, character }
   });
+  db.version(4).stores({
+    notices: '++id, at'  // { id, at(ms), slot, body }  받은 알림 내역 (서비스 워커가 알림을 띄울 때 저장)
+  });
 
   const newId = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
     : Date.now().toString(36) + Math.random().toString(36).slice(2);
@@ -76,6 +79,15 @@
     prefs: {   // 테마·알림: { theme: 'pink' | 'black' | 'blue' | 'yellow' | 'green' | 'white', character: 'bunny' | 'clover', notify }
       async get() { const p = await db.settings.get('prefs'); if (!p) return {}; const { key, ...rest } = p; return rest; },
       set: prefs => db.settings.put({ key: 'prefs', theme: prefs.theme, character: prefs.character, notify: !!prefs.notify })
+    },
+
+    notices: {
+      add: n => db.notices.add({ at: Date.now(), ...n }),
+      latest: (limit = 60) => db.notices.orderBy('at').reverse().limit(limit).toArray(),
+      async lastAt() { const n = await db.notices.orderBy('at').last(); return n ? n.at : 0; },
+      clear: () => db.notices.clear(),
+      // 오래된 것 정리: 최근 100개만
+      async prune() { const old = await db.notices.orderBy('at').reverse().offset(100).primaryKeys(); if (old.length) await db.notices.bulkDelete(old); }
     },
 
     background: {   // 사용자가 고른 배경 사진 (줄인 JPEG Blob). 없으면 기본 배경
