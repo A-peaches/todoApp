@@ -93,8 +93,11 @@ export default {
     if (pathname === '/subscribe') {
       if (!validSub(body.subscription)) return json({ error: 'bad subscription' }, 400, origin);
       const tz = validTz(body.tz) ? body.tz : 'Asia/Seoul';
-      const rec = { subscription: body.subscription, lat: num(body.lat, -90, 90), lon: num(body.lon, -180, 180), tz, updatedAt: Date.now() };
-      await env.SUBS.put(await keyOf(body.subscription.endpoint), JSON.stringify(rec));
+      const key = await keyOf(body.subscription.endpoint);
+      const prev = await env.SUBS.get(key, 'json');   // 마지막 발송 결과(last)는 지우지 않고 이어감
+      const rec = { subscription: body.subscription, lat: num(body.lat, -90, 90), lon: num(body.lon, -180, 180), tz, updatedAt: Date.now(),
+        createdAt: prev && prev.createdAt || Date.now(), ...(prev && prev.last ? { last: prev.last } : {}) };
+      await env.SUBS.put(key, JSON.stringify(rec));
       return json({ ok: true }, 200, origin);
     }
     if (pathname === '/unsubscribe') {

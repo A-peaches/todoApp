@@ -6,7 +6,7 @@ importScripts('notify.js');
 
 // ---- 오프라인: 앱 파일과 라이브러리를 폰에 저장해 두고, 인터넷이 없으면 저장본으로 열기 ----
 // 앱 파일은 '인터넷 먼저'(새 버전 바로 반영), 라이브러리·글꼴은 '저장본 먼저'(버전 고정이라 안 바뀜)
-const CACHE = 'todo-offline-v17';
+const CACHE = 'todo-offline-v18';
 const APP_FILES = ['./princess-todo.html', './css/app.css', './js/app.js', './db.js', './notify.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/badge-96.png',
   './icons/icon-maskable-192.png', './icons/icon-maskable-512.png', './icons/splash-192.png', './icons/splash-512.png'];
@@ -85,24 +85,32 @@ function readLocal() {
   });
 }
 
+// 폰 DB 읽기·쓰기가 늦어져도 알림은 꼭 뜨게: 정해진 시간 안에 안 끝나면 기본값으로 진행
+const withTimeout = (p, ms, fallback) => Promise.race([
+  Promise.resolve(p).catch(() => fallback), new Promise(r => setTimeout(() => r(fallback), ms))]);
+
 self.addEventListener('push', e => {
   e.waitUntil((async () => {
-    const d = e.data ? e.data.json() : {};
-    const local = await readLocal();
+    let d = {};
+    try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data ? e.data.text() : '' }; }
+    const local = await withTimeout(readLocal(), 1500, {});
     if (local.prefs && local.prefs.notify === false) return;   // 앱에서 알림을 껐으면 표시 안 함
     let body = d.body;
     if (!body && d.slot) {
-      const n = new Date(), pad = x => String(x).padStart(2, '0');
-      const today = n.getFullYear() + '-' + pad(n.getMonth() + 1) + '-' + pad(n.getDate());
-      const left = (local.todos || []).filter(t => t.date === today && !t.done).length;
-      body = self.TodoNotify.buildMessage(d.slot, { name: local.profile && local.profile.name, weather: d.weather, left });
+      try {
+        const n = new Date(), pad = x => String(x).padStart(2, '0');
+        const today = n.getFullYear() + '-' + pad(n.getMonth() + 1) + '-' + pad(n.getDate());
+        const left = (local.todos || []).filter(t => t.date === today && !t.done).length;
+        body = self.TodoNotify.buildMessage(d.slot, { name: local.profile && local.profile.name, weather: d.weather, left });
+      } catch (err) { body = '오늘도 반짝이는 하루 보내요 ・₊✧'; }
     }
-    await saveNotice({ slot: d.slot || null, body: body || '' });
-    // 열려 있는 앱이 있으면 종에 빨간 점 다시 그리게
-    (await self.clients.matchAll({ type: 'window' })).forEach(c => c.postMessage({ type: 'notice' }));
+    // 1) 알림부터 띄우고
     await self.registration.showNotification(d.title || '₊‧Todo‧₊', {
       body: body || '', tag: d.slot ? 'todo-' + d.slot : d.tag, icon: 'icons/icon-192.png',
       badge: 'icons/badge-96.png'   // 안드로이드 상단바: 투명 배경 흰 TO/DO (꽉 찬 아이콘은 흰 네모로 보임)
     });
+    // 2) 그다음 내역 저장 + 열려 있는 앱의 종에 빨간 점
+    await withTimeout(saveNotice({ slot: d.slot || null, body: body || '' }), 1500);
+    (await self.clients.matchAll({ type: 'window' })).forEach(c => c.postMessage({ type: 'notice' }));
   })());
 });
