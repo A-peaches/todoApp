@@ -6,6 +6,8 @@
     const f = window.innerHeight < 640 && !matchMedia('(min-width: 600px) and (min-height: 700px)').matches
       ? Math.max(0.7, window.innerHeight / 640) : 1;
     document.documentElement.style.setProperty('--fit', f.toFixed(3));
+    // 100dvh를 잘못 재는 브라우저가 있어서 실제 보이는 높이(px)로 고정
+    document.documentElement.style.setProperty('--app-h', window.innerHeight + 'px');
   };
   fit(); window.addEventListener('resize', fit);
 })();
@@ -638,12 +640,6 @@
     document.querySelectorAll('.char-opt[data-char]').forEach(b => b.setAttribute('aria-checked', b.dataset.char === character));
     document.querySelectorAll('.swatch').forEach(b => b.setAttribute('aria-checked', b.dataset.theme === prefs.theme));
     updateFavicon();
-    // 하트 그라데이션 색: 일부 안드로이드 크롬이 CSS 변수로 준 stop 색을 못 그려서 실제 색을 직접 넣음
-    const css = getComputedStyle(document.documentElement);
-    document.querySelectorAll('#hg stop').forEach(s => {
-      const v = css.getPropertyValue('--' + s.getAttribute('class').slice(2)).trim();
-      if (v) { s.style.stopColor = v; s.setAttribute('stop-color', v); }
-    });
     // 상태바(주소창) 색도 테마 배경색으로
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = getComputedStyle(document.documentElement).getPropertyValue('--blush').trim() || '#fbe9f1';
