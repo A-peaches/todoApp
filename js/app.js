@@ -1,5 +1,14 @@
 // 공주 투두 화면 동작 (princess-todo.html에서 분리)
 // 순서: 저장소 → 홈(헤더·이번 주·멘트·달력·날씨·하트) → 할 일 등록 → 완료한 일 → 일기장 → 테마 → 알림 → 프로필 → 화면 전환 → 캐릭터 → 눈
+// 한 화면 맞춤: 화면 높이가 640px 미만이면 그 비율만큼 앱을 줄임 (css의 --fit)
+(function () {
+  const fit = () => {
+    const f = window.innerHeight < 640 && !matchMedia('(min-width: 600px) and (min-height: 700px)').matches
+      ? Math.max(0.7, window.innerHeight / 640) : 1;
+    document.documentElement.style.setProperty('--fit', f.toFixed(3));
+  };
+  fit(); window.addEventListener('resize', fit);
+})();
 (async function () {
   const pad = n => String(n).padStart(2, '0');
   const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
@@ -629,6 +638,12 @@
     document.querySelectorAll('.char-opt[data-char]').forEach(b => b.setAttribute('aria-checked', b.dataset.char === character));
     document.querySelectorAll('.swatch').forEach(b => b.setAttribute('aria-checked', b.dataset.theme === prefs.theme));
     updateFavicon();
+    // 하트 그라데이션 색: 일부 안드로이드 크롬이 CSS 변수로 준 stop 색을 못 그려서 실제 색을 직접 넣음
+    const css = getComputedStyle(document.documentElement);
+    document.querySelectorAll('#hg stop').forEach(s => {
+      const v = css.getPropertyValue('--' + s.getAttribute('class').slice(2)).trim();
+      if (v) { s.style.stopColor = v; s.setAttribute('stop-color', v); }
+    });
     // 상태바(주소창) 색도 테마 배경색으로
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = getComputedStyle(document.documentElement).getPropertyValue('--blush').trim() || '#fbe9f1';

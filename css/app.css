@@ -481,8 +481,10 @@ body { margin: 0; }
   }
   #phone > .app { min-height: 0; }
 }
+/* 화면이 640px보다 낮으면(안드로이드 크롬이 글자 크기 설정만큼 페이지를 확대할 때 등) 스크롤 대신 통째로 줄여서 한 화면에 (--fit은 app.js가 계산) */
+.app, .nav { zoom: var(--fit, 1); }
 .app {
-  height: var(--app-h); min-height: 640px; box-sizing: border-box; overflow: hidden; gap: 12px;   /* 640px보다 낮은 화면은 찌그러뜨리지 않고 페이지를 스크롤 */
+  height: calc(var(--app-h) / var(--fit, 1)); min-height: 640px; box-sizing: border-box; overflow: hidden; gap: 12px;   
   padding-top: calc(6px + env(safe-area-inset-top, 0px));
   padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px));   /* 하단 탭바 높이만큼 */
 }
