@@ -204,13 +204,14 @@ body {
 .temps .lo { color: var(--cool); } .temps .hi { color: var(--rose); }
 .big-heart { border: 0; background: none; padding: 0; cursor: pointer; display: grid; place-items: center; }
 .big-heart svg { width: 100%; max-width: 108px; filter: drop-shadow(0 8px 14px rgba(var(--rose-rgb),.28)); }
-/* 하트 색: 새 안드로이드 크롬(159)이 SVG 그라데이션을 반투명하게, 대각선 그라데이션을 줄무늬로 깨뜨려서 위→아래 CSS 그라데이션을 하트 모양으로 오려 씀 */
+/* 하트 색: 새 안드로이드 크롬(159)이 SVG·CSS 그라데이션을 반투명·줄무늬로 깨뜨려서, 미리 칠해 둔 그라데이션 하트 그림(icons/heart-테마.png)을 씀 */
 .big-heart .heart-shape { display: grid; place-items: center; width: 100%; filter: drop-shadow(0 8px 14px rgba(var(--rose-rgb),.28)); }
-.big-heart .shape-heart {
-  filter: none; background: var(--heart) linear-gradient(180deg, var(--heart-light), var(--heart) 55%, var(--heart-deep));
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 92'%3E%3Cpath d='M50 86 C14 62 4 42 8 24 C12 6 36 2 50 22 C64 2 88 6 92 24 C96 42 86 62 50 86Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 92'%3E%3Cpath d='M50 86 C14 62 4 42 8 24 C12 6 36 2 50 22 C64 2 88 6 92 24 C96 42 86 62 50 86Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
-}
+.big-heart .shape-heart { filter: none; background: url(../icons/heart-pink.png) center / 100% 100% no-repeat; }
+:root[data-theme="blue"] .big-heart .shape-heart { background-image: url(../icons/heart-blue.png); }
+:root[data-theme="yellow"] .big-heart .shape-heart { background-image: url(../icons/heart-yellow.png); }
+:root[data-theme="green"] .big-heart .shape-heart { background-image: url(../icons/heart-green.png); }
+:root[data-theme="white"] .big-heart .shape-heart { background-image: url(../icons/heart-white.png); }
+:root[data-theme="black"] .big-heart .shape-heart { background-image: url(../icons/heart-black.png); }
 .big-heart.pop svg { animation: pop .5s ease; }
 .heart-count { font-family: var(--f-num); font-size: 18px; line-height: 1; color: var(--rose); margin-top: 4px; font-variant-numeric: tabular-nums; }
 .heart-count::before { content: "♡ "; font-family: var(--f-body); font-size: 12px; }
@@ -257,7 +258,7 @@ body {
 .month-nav .month { margin: 0; min-width: 150px; }
 .month-nav button {
   width: 30px; height: 30px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center;
-  background: linear-gradient(180deg, var(--surface), var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi); color: var(--rose);
+  background: var(--surface); /* 그라데이션 대신 안쪽 그림자 (크롬 159) */ box-shadow: inset 0 -10px 12px -8px var(--rose-soft), 0 0 0 1px var(--gold-hi); color: var(--rose);
 }
 .month-nav button svg { width: 14px; height: 14px; }
 .pcal-month td.fc-daygrid-day { padding: 2px 1px; cursor: pointer; }
@@ -347,7 +348,7 @@ body {
 .diary-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; margin-top: 10px; }
 .diary-btn {
   border: 0; cursor: pointer; border-radius: 99px; padding: 9px 22px;
-  font: 700 13px var(--f-body); color: var(--rose); background: linear-gradient(180deg, var(--surface), var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi);
+  font: 700 13px var(--f-body); color: var(--rose); background: var(--surface); /* 그라데이션 대신 안쪽 그림자 (크롬 159) */ box-shadow: inset 0 -10px 12px -8px var(--rose-soft), 0 0 0 1px var(--gold-hi);
 }
 .diary-btn.save { color: var(--on-accent); background: var(--rose) linear-gradient(180deg, var(--rose-hi), var(--rose)); }
 .diary-btn:disabled { opacity: .4; cursor: default; }
@@ -360,7 +361,7 @@ body {
 .profile-card { padding: 34px 16px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .avatar {
   width: 112px; height: 112px; border-radius: 50%; margin-top: 12px; display: grid; place-items: center; overflow: hidden;
-  background: radial-gradient(circle at 50% 40%, var(--surface), var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi), 0 8px 18px rgba(var(--rose-rgb),.18);
+  background: var(--surface); box-shadow: inset 0 0 22px var(--rose-soft), 0 0 0 1px var(--gold-hi), 0 8px 18px rgba(var(--rose-rgb),.18);
 }
 .avatar canvas { width: 96px; height: 90px; image-rendering: pixelated; image-rendering: crisp-edges; margin-top: 6px; }
 .profile-name { font-family: var(--f-kr-display); font-weight: 700; font-size: 18px; margin-top: 8px; }
@@ -443,7 +444,7 @@ body {
 /* 하단 탭바 */
 .nav {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
-  background: linear-gradient(var(--nav-bg), var(--nav-bg)) var(--surface);   /* 흐림 효과를 뺐으니 뒤 화면이 비치지 않게 */
+  background: var(--surface);   /* 흐림 효과를 뺐으니 뒤 화면이 비치지 않게 불투명 단색 */
   border-top: 1px solid var(--rose-soft);
   box-shadow: 0 -6px 18px rgba(var(--shadow-rgb),.12);
   padding-top: 8px;
@@ -459,7 +460,7 @@ body {
 .nav svg { width: 24px; height: 24px; }
 .nav .ico { padding: 4px 12px; display: grid; place-items: center; border-radius: 14px; }
 .nav button[aria-current="page"] { color: var(--rose); font-weight: 700; }
-.nav button[aria-current="page"] .ico { background: linear-gradient(180deg, var(--surface), var(--rose-soft)); box-shadow: 0 0 0 1px var(--gold-hi); }
+.nav button[aria-current="page"] .ico { background: var(--surface); /* 그라데이션 대신 안쪽 그림자 (크롬 159) */ box-shadow: inset 0 -10px 12px -8px var(--rose-soft), 0 0 0 1px var(--gold-hi); }
 
 .toast { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 8px 14px; border-radius: 99px; font-size: 12px; white-space: nowrap; z-index: 6; display: flex; align-items: center; gap: 10px; }
 .toast[hidden] { display: none; }
