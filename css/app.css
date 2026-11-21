@@ -46,7 +46,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* 길게 누를 때 파란 글자 선택이 생기지 않게 (입력칸·일기는 그대로) */
 button, .todo-list li, .day-list li, .nav, .pcal { -webkit-user-select: none; user-select: none; }
 /* 폰에서 누를 때 생기는 파란(회색) 네모 하이라이트 없애기. 키보드 이동 때 테두리(:focus-visible)는 그대로 */
-* { -webkit-tap-highlight-color: transparent; }
+* { -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
+/* 손가락으로 누른 뒤 남는 포커스 표시는 숨김 (새 안드로이드 크롬이 이걸 파란 덩어리로 그림) */
+:focus:not(:focus-visible) { outline: none; }
 /* 빠르게 두 번 눌러도 확대되지 않게 (두 손가락 확대는 그대로) */
 html, body, button, a, [role="button"], [role="link"], .pcal td { touch-action: manipulation; }
 body {
@@ -202,10 +204,10 @@ body {
 .temps .lo { color: var(--cool); } .temps .hi { color: var(--rose); }
 .big-heart { border: 0; background: none; padding: 0; cursor: pointer; display: grid; place-items: center; }
 .big-heart svg { width: 100%; max-width: 108px; filter: drop-shadow(0 8px 14px rgba(var(--rose-rgb),.28)); }
-/* 하트 색: 새 안드로이드 크롬(159)이 SVG 그라데이션을 반투명하게 깨뜨려서, 잘 그려지는 CSS 그라데이션을 하트 모양으로 오려 씀 */
+/* 하트 색: 새 안드로이드 크롬(159)이 SVG 그라데이션을 반투명하게, 대각선 그라데이션을 줄무늬로 깨뜨려서 위→아래 CSS 그라데이션을 하트 모양으로 오려 씀 */
 .big-heart .heart-shape { display: grid; place-items: center; width: 100%; filter: drop-shadow(0 8px 14px rgba(var(--rose-rgb),.28)); }
 .big-heart .shape-heart {
-  filter: none; background: var(--heart) linear-gradient(135deg, var(--heart-light), var(--heart) 55%, var(--heart-deep));
+  filter: none; background: var(--heart) linear-gradient(180deg, var(--heart-light), var(--heart) 55%, var(--heart-deep));
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 92'%3E%3Cpath d='M50 86 C14 62 4 42 8 24 C12 6 36 2 50 22 C64 2 88 6 92 24 C96 42 86 62 50 86Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 92'%3E%3Cpath d='M50 86 C14 62 4 42 8 24 C12 6 36 2 50 22 C64 2 88 6 92 24 C96 42 86 62 50 86Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
 }
@@ -441,7 +443,7 @@ body {
 /* 하단 탭바 */
 .nav {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
-  background: var(--nav-bg);
+  background: linear-gradient(var(--nav-bg), var(--nav-bg)) var(--surface);   /* 흐림 효과를 뺐으니 뒤 화면이 비치지 않게 */
   border-top: 1px solid var(--rose-soft);
   box-shadow: 0 -6px 18px rgba(var(--shadow-rgb),.12);
   padding-top: 8px;
