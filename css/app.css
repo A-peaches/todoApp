@@ -217,6 +217,7 @@ body {
 .heart-count::before { content: "♡ "; font-family: var(--f-body); font-size: 12px; }
 /* 캐릭터가 네잎클로버면 가운데 하트도 클로버로 */
 .big-heart .shape-clover { display: none; }
+.big-heart .shape-clover { background: url(../icons/clover.png) center / 100% 100% no-repeat; }   /* 잎 그라데이션도 미리 칠한 그림 (크롬 159) */
 :root[data-char="clover"] .big-heart .shape-heart { display: none; }
 :root[data-char="clover"] .big-heart .shape-clover { display: block; filter: drop-shadow(0 8px 14px rgba(78,154,87,.28)); }
 :root[data-char="clover"] .heart-count::before { content: "☘\FE0E  "; }
