@@ -133,7 +133,6 @@ body {
 .card {
   position: relative;
   background: var(--frost);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   border: 1px solid var(--card-border);
   border-radius: 26px;
   box-shadow: 0 0 0 1px var(--rose-soft), 0 12px 28px rgba(var(--shadow-rgb), .14);
@@ -203,6 +202,13 @@ body {
 .temps .lo { color: var(--cool); } .temps .hi { color: var(--rose); }
 .big-heart { border: 0; background: none; padding: 0; cursor: pointer; display: grid; place-items: center; }
 .big-heart svg { width: 100%; max-width: 108px; filter: drop-shadow(0 8px 14px rgba(var(--rose-rgb),.28)); }
+/* 하트 색: 새 안드로이드 크롬(159)이 SVG 그라데이션을 반투명하게 깨뜨려서, 잘 그려지는 CSS 그라데이션을 하트 모양으로 오려 씀 */
+.big-heart .heart-shape { display: grid; place-items: center; width: 100%; filter: drop-shadow(0 8px 14px rgba(var(--rose-rgb),.28)); }
+.big-heart .shape-heart {
+  filter: none; background: var(--heart) linear-gradient(135deg, var(--heart-light), var(--heart) 55%, var(--heart-deep));
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 92'%3E%3Cpath d='M50 86 C14 62 4 42 8 24 C12 6 36 2 50 22 C64 2 88 6 92 24 C96 42 86 62 50 86Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 92'%3E%3Cpath d='M50 86 C14 62 4 42 8 24 C12 6 36 2 50 22 C64 2 88 6 92 24 C96 42 86 62 50 86Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
 .big-heart.pop svg { animation: pop .5s ease; }
 .heart-count { font-family: var(--f-num); font-size: 18px; line-height: 1; color: var(--rose); margin-top: 4px; font-variant-numeric: tabular-nums; }
 .heart-count::before { content: "♡ "; font-family: var(--f-body); font-size: 12px; }
@@ -299,7 +305,7 @@ body {
   width: min(340px, calc(100vw - 32px)); border: 0; padding: 0; border-radius: 26px; color: var(--ink);
   background: var(--dialog-bg); box-shadow: 0 0 0 1px var(--rose-soft), 0 20px 50px rgba(var(--shadow-rgb),.3);
 }
-.add-dialog::backdrop { background: rgba(var(--shadow-rgb),.3); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.add-dialog::backdrop { background: rgba(var(--shadow-rgb),.3); }
 .add-dialog form { position: relative; padding: 40px 18px 18px; text-align: center; }
 .add-dialog .tab { top: 0; }
 .add-dialog .dlg-date { font-family: var(--f-kr-display); font-size: 13px; color: var(--muted); margin-top: 6px; }
@@ -436,7 +442,6 @@ body {
 .nav {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
   background: var(--nav-bg);
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   border-top: 1px solid var(--rose-soft);
   box-shadow: 0 -6px 18px rgba(var(--shadow-rgb),.12);
   padding-top: 8px;
